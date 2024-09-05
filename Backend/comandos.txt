@@ -1,0 +1,28 @@
+# MKDISK
+mkdisk -unit=M -size=5 -fit=ff -path=/home/elian/Escritorio/diskA.mia
+mkdisk -size=5 -unit=M -fit=ff -path="/home/elian/Escritorio/prueba 2/kill me/diskA.mia"
+
+# RMDISK
+rmdisk -path="/home/elian/Escritorio/diskA.mia"
+
+# FDISK
+# Particion 1 (Primaria)
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/diskA.mia" -name=Particion1
+
+# Particion 2 (Primaria)
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/diskA.mia" -name=Particion2
+
+# Particion 3 (Primaria)
+fdisk -Size=2 -unit=M -path="/home/elian/Escritorio/diskA.mia" -name=Particion3
+
+# Particion 4 (Primaria)   
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/diskA.mia" -name=Particion4 
+
+# MOUNT
+# Ultimos dos digitos de mi carnet = 30
+# id=301A
+mount -path="/home/elian/Escritorio/diskA.mia" -name=Particion2
+
+# REP
+# DISK
+rep -id=301A -path="/home/elian/Escritorio/diskA.jpg" -name=disk
