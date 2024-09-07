@@ -1,27 +1,47 @@
 # MKDISK
-mkdisk -unit=M -size=5 -fit=ff -path=/home/elian/Escritorio/diskA.mia
-mkdisk -size=5 -unit=M -fit=ff -path="/home/elian/Escritorio/prueba 2/kill me/diskA.mia"
+mkdisk -unit=M -size=5 -path=/home/elian/Escritorio/disk2.mia
+mkdisk -size=5 -unit=M -fit=ff -path="/home/elian/Escritorio/prueba 2/kill me/disk2.mia"
 
 # RMDISK
 rmdisk -path="/home/elian/Escritorio/diskA.mia"
 
 # FDISK
 # Particion 1 (Primaria)
-fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/diskA.mia" -name=Particion1
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk1.mia" -name=Particion1
 
 # Particion 2 (Primaria)
-fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/diskA.mia" -name=Particion2
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk1.mia" -name=Particion2
 
 # Particion 3 (Primaria)
-fdisk -Size=2 -unit=M -path="/home/elian/Escritorio/diskA.mia" -name=Particion3
+fdisk -Size=2 -unit=M -path="/home/elian/Escritorio/disk1.mia" -name=Particion4
 
 # Particion 4 (Primaria)   
-fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/diskA.mia" -name=Particion4 
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk1.mia" -name=Particion3 
 
 # MOUNT
-# Ultimos dos digitos de mi carnet = 30
-# id=301A
-mount -path="/home/elian/Escritorio/diskA.mia" -name=Particion2
+mount -path="/home/elian/Escritorio/disk1.mia" -name=Particion1
+
+# === Disco 2 ===
+# MKDISK
+mkdisk -unit=M -size=5 -path=/home/elian/Escritorio/disk2.mia
+
+# FDISK
+# Particion 1 (Primaria)
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk2.mia" -name=Particion1
+
+# Particion 2 (Primaria)
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk2.mia" -name=Particion2
+
+# Particion 3 (Primaria)
+fdisk -Size=2 -unit=M -path="/home/elian/Escritorio/disk2.mia" -name=Particion3
+
+# Particion 4 (Primaria)   
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk2.mia" -name=Particion4 
+
+==== Fin Disco 2 ====
+
+# MOUNT
+mount -path="/home/elian/Escritorio/disk2.mia" -name=Particion1
 
 # REP
 # DISK

@@ -734,10 +734,10 @@ func mount(commandArray []string) {
 
 		// Identifica los parametos
 		switch {
-		/* PARAMETRO OBLIGATORIO -> PATH */
+		/* PARAMETRO OBLIGATORIO -PATH */
 		case strings.Contains(data, "path="):
 			if band_path {
-				fmt.Println("[ERROR] El parametro -path ya fue ingresado...")
+				fmt.Println("[ERROR] El parametro -path ya fue ingresado")
 				band_error = true
 				break
 			}
@@ -747,11 +747,12 @@ func mount(commandArray []string) {
 
 			// Reemplaza comillas
 			val_path = strings.Replace(val_data, "\"", "", 2)
-		/* PARAMETRO OBLIGATORIO -> NAME */
+
+		/* PARAMETRO OBLIGATORIO -NAME */
 		case strings.Contains(data, "name="):
 			// Valido si el parametro ya fue ingresado
 			if band_name {
-				fmt.Println("[ERROR] El parametro -name ya fue ingresado...")
+				fmt.Println("[ERROR] El parametro -name ya fue ingresado")
 				band_error = true
 				break
 			}
@@ -763,7 +764,7 @@ func mount(commandArray []string) {
 			val_name = strings.Replace(val_data, "\"", "", 2)
 		/* PARAMETRO NO VALIDO */
 		default:
-			fmt.Println("[ERROR] Parametro no valido...")
+			fmt.Println("[ERROR] Parametro no valido")
 		}
 	}
 
@@ -822,7 +823,7 @@ func mount(commandArray []string) {
 							Mount.Imprimir_contenido(lista_montajes)
 						}
 					} else {
-						fmt.Println("[ERROR] No se encuentra el disco...")
+						fmt.Println("[ERROR] No se encuentra el disco")
 					}
 				} else {
 					//Posiblemente logica
@@ -859,7 +860,7 @@ func mount(commandArray []string) {
 
 							// Verifico si la particion ya esta montada
 							if Mount.Buscar_particion(val_path, val_name, lista_montajes) {
-								fmt.Println("[ERROR] La particion ya esta montada...")
+								fmt.Println("[ERROR] La particion ya esta montada")
 							} else {
 								// Generacion de id
 								// Numero de particion
@@ -867,7 +868,7 @@ func mount(commandArray []string) {
 								// Letra de disco
 								letra := Mount.Buscar_letra(val_path, lista_montajes)
 								// Terminacion de su Carnet (los ultimos dos digitos)
-								id := "30" + strconv.Itoa(num) + letra
+								id := "92" + strconv.Itoa(num) + letra
 
 								var n *Mount.Nodo = Mount.New_nodo(id, val_path, val_name, letra, num)
 								Mount.Insertar(n, lista_montajes)
@@ -875,18 +876,18 @@ func mount(commandArray []string) {
 								Mount.Imprimir_contenido(lista_montajes)
 							}
 						} else {
-							fmt.Println("[ERROR] No se encuentra el disco...")
+							fmt.Println("[ERROR] No se encuentra el disco")
 						}
 
 					} else {
-						fmt.Println("[ERROR] No se encuentra la particion a montar...")
+						fmt.Println("[ERROR] No se encuentra la particion a montar")
 					}
 				}
 			} else {
-				fmt.Println("[ERROR] Parametro -name no definido...")
+				fmt.Println("[ERROR] Parametro -name no definido")
 			}
 		} else {
-			fmt.Println("[ERROR] Parametro -path no definido...")
+			fmt.Println("[ERROR] Parametro -path no definido")
 		}
 	}
 

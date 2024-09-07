@@ -20,7 +20,7 @@ type Lista struct {
 }
 
 // Nodo de Graphviz con datos de la particion
-func New_nodo(id string, direccion string, nombre string, letra string, num int) *Nodo {
+func New_nodo(id string, direccion string, nombre string, letra string, num int) * Nodo {
 	return &Nodo{id, direccion, nombre, letra, num, nil}
 }
 
@@ -83,14 +83,24 @@ func Buscar_particion(direccion string, nombre string, lista *Lista) bool {
 
 // Busca por direccion y obtiene el numero
 func Buscar_letra(direccion string, lista *Lista) string {
+	// Puntero auxiliar al primer nodo de la lista
 	aux := lista.Primero
+	// Letra A en ASCII
 	num_ascii := 65
 
 	for aux != nil {
-		if (direccion == aux.Direccion) && (string(rune(num_ascii)) == aux.Letra) {
+		// Si la direccion es igual entonces es el mismo disco, NO SE INCREMENTA LA LETRA
+		if (direccion == aux.Direccion) {
+			return string(rune(num_ascii))
+		
+		// 
+		} else if((string(rune(num_ascii)) == aux.Letra) && (direccion != aux.Direccion)) {
+			// Si la direccion es diferente entonces se incrementa la letra
 			num_ascii++
 		}
+
 		aux = aux.Siguiente
+		
 	}
 
 	return string(rune(num_ascii))
@@ -101,13 +111,13 @@ func Buscar_numero(direccion string, lista *Lista) int {
 	aux := lista.Primero
 	retorno := 1
 
+
 	for aux != nil {
-		if direccion == aux.Direccion {
-			return retorno
+		if (direccion == aux.Direccion) &&  retorno == aux.Num {
+			retorno++
 		}
 
 		aux = aux.Siguiente
-		retorno++
 	}
 
 	return retorno
