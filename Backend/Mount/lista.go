@@ -113,7 +113,7 @@ func Buscar_numero(direccion string, lista *Lista) int {
 
 
 	for aux != nil {
-		if (direccion == aux.Direccion) &&  retorno == aux.Num {
+		if direccion == aux.Direccion{
 			retorno++
 		}
 

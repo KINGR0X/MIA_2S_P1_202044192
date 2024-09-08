@@ -38,8 +38,8 @@ type Partition struct {
 	Part_size   [100]byte
 	Part_name   [100]byte
 	/* Variables que cambian al montar la partición */
-	Part_correlative [100]byte
-	Part_id [100]byte
+	//Part_correlative [100]byte
+	//Part_id [100]byte
 }
 
 // Extended Boot Record
@@ -828,6 +828,7 @@ func mount(commandArray []string) {
 				} else {
 					//Posiblemente logica
 					index_p := buscar_particion_l(val_path, val_name)
+
 					if index_p != -1 {
 						// Apertura del archivo
 						f, err := os.OpenFile(val_path, os.O_RDWR, 0660)
@@ -883,6 +884,7 @@ func mount(commandArray []string) {
 						fmt.Println("[ERROR] No se encuentra la particion a montar")
 					}
 				}
+
 			} else {
 				fmt.Println("[ERROR] Parametro -name no definido")
 			}
@@ -890,8 +892,6 @@ func mount(commandArray []string) {
 			fmt.Println("[ERROR] Parametro -path no definido")
 		}
 	}
-
-	fmt.Println("[MENSAJE] El comando MOUNT aqui finaliza")
 }
 
 /* REP 2.0 */
@@ -2445,7 +2445,7 @@ func struct_a_bytes(p interface{}) []byte {
 
 	// ERROR
 	if err != nil && err != io.EOF {
-		fmt.Println("[ERROR] ", err)
+		fmt.Println("[ERROR_struct_a_bytes] ", err)
 	}
 
 	return buf.Bytes()
@@ -2459,7 +2459,7 @@ func bytes_a_struct_mbr(s []byte) MBR {
 
 	// ERROR
 	if err != nil && err != io.EOF {
-		fmt.Println("[ERROR] ", err)
+		fmt.Println("[ERROR_bytes_a_struct_mbr] ", err)
 	}
 
 	return p
@@ -2473,7 +2473,7 @@ func bytes_a_struct_ebr(s []byte) EBR {
 
 	// ERROR
 	if err != nil && err != io.EOF {
-		fmt.Println("[ERROR] ", err)
+		fmt.Println("[ERROR_bytes_a_struct_ebr] ", err)
 	}
 
 	return p

@@ -1,5 +1,5 @@
 # MKDISK
-mkdisk -unit=M -size=5 -path=/home/elian/Escritorio/disk2.mia
+mkdisk -unit=M -size=6 -path=/home/elian/Escritorio/disk1.mia
 mkdisk -size=5 -unit=M -fit=ff -path="/home/elian/Escritorio/prueba 2/kill me/disk2.mia"
 
 # RMDISK
@@ -13,17 +13,17 @@ fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk1.mia" -name=Particion1
 fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk1.mia" -name=Particion2
 
 # Particion 3 (Primaria)
-fdisk -Size=2 -unit=M -path="/home/elian/Escritorio/disk1.mia" -name=Particion4
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk1.mia" -name=Particion3
 
 # Particion 4 (Primaria)   
-fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk1.mia" -name=Particion3 
+fdisk -Size=1 -unit=M -path="/home/elian/Escritorio/disk1.mia" -name=Particion4 
 
 # MOUNT
 mount -path="/home/elian/Escritorio/disk1.mia" -name=Particion1
 
 # === Disco 2 ===
 # MKDISK
-mkdisk -unit=M -size=5 -path=/home/elian/Escritorio/disk2.mia
+mkdisk -unit=M -size=7 -path=/home/elian/Escritorio/disk2.mia
 
 # FDISK
 # Particion 1 (Primaria)
