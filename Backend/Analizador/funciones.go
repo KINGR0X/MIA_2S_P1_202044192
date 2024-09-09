@@ -38,8 +38,8 @@ type Partition struct {
 	Part_size   [100]byte
 	Part_name   [100]byte
 	/* Variables que cambian al montar la partición */
-	//Part_correlative [100]byte
-	//Part_id [100]byte
+	Part_correlative [100]byte
+	Part_id [100]byte
 }
 
 // Extended Boot Record
@@ -805,7 +805,7 @@ func mount(commandArray []string) {
 						f.Write(mbr_byte)
 						f.Close()
 
-						// Verifico si la particion ya esta montada
+						// Verifico si la particion ya esta montada (en la lista enlazada)
 						if Mount.Buscar_particion(val_path, val_name, lista_montajes) {
 							fmt.Println("[ERROR] La particion ya esta montada")
 						} else {
@@ -894,9 +894,9 @@ func mount(commandArray []string) {
 	}
 }
 
-/* REP 2.0 */
+/* REP */
 func rep(commandArray []string) {
-	fmt.Println("[MENSAJE] El comando REP aqui inicia")
+	fmt.Println("=== Se ingreso el comando rep ===")
 	// Variables para los valores de los parametros
 	val_name := ""
 	val_path := ""
@@ -934,7 +934,8 @@ func rep(commandArray []string) {
 
 			// Reemplaza comillas
 			val_name = strings.Replace(val_data, "\"", "", 2)
-		/* PARAMETRO OBLIGATORIO -> PATH */
+
+		/* PARAMETRO OBLIGATORIO -PATH */
 		case strings.Contains(data, "path="):
 			if band_path {
 				fmt.Println("[ERROR] El parametro -path ya fue ingresado...")
@@ -947,7 +948,8 @@ func rep(commandArray []string) {
 
 			// Reemplaza comillas
 			val_path = strings.Replace(val_data, "\"", "", 2)
-		/* PARAMETRO OBLIGATORIO -> ID */
+
+		/* PARAMETRO OBLIGATORIO -ID */
 		case strings.Contains(data, "id="):
 			// Valido si el parametro ya fue ingresado
 			if band_id {
@@ -961,7 +963,8 @@ func rep(commandArray []string) {
 
 			// Reemplaza comillas
 			val_id = val_data
-		/* PARAMETRO OBLIGATORIO -> RUTA */
+
+		/* PARAMETRO OBLIGATORIO -RUTA */
 		case strings.Contains(data, "ruta="):
 			if band_ruta {
 				fmt.Println("[ERROR] El parametro -ruta ya fue ingresado...")
@@ -2348,6 +2351,8 @@ func buscar_particion_p_e(direccion string, nombre string) int {
 				if s_part_name == nombre {
 					return i
 				}
+			}else{
+				fmt.Println("[ERROR] El estado de la particion es 1")
 			}
 
 		}
