@@ -672,8 +672,8 @@ func fdisk(commandArray []string) {
 			// Activo la bandera del parametro
 			band_name = true
 
-			// Reemplaza comillas
-			val_name = strings.Replace(val_data, "\"", "", 2)
+			// Reemplaza comillas y quitar espacios en blanco
+			val_name = strings.TrimSpace(strings.Replace(val_data, "\"", "", 2))
 		/* PARAMETRO NO VALIDO */
 		default:
 			fmt.Println("[ERROR] Parametro no valido")
@@ -760,8 +760,8 @@ func mount(commandArray []string) {
 			// Activo la bandera del parametro
 			band_name = true
 
-			// Reemplaza comillas
-			val_name = strings.Replace(val_data, "\"", "", 2)
+			// Reemplaza comillas y quitar espacios en blanco
+			val_name = strings.TrimSpace(strings.Replace(val_data, "\"", "", 2))
 		/* PARAMETRO NO VALIDO */
 		default:
 			fmt.Println("[ERROR] Parametro no valido")
