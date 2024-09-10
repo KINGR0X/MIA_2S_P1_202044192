@@ -713,7 +713,7 @@ func fdisk(commandArray []string) {
 }
 
 
-/* MOUNT */
+/* MOUNT, solo se montaran primarias*/
 func mount(commandArray []string) {
 	fmt.Println("=== Se ingreso el comando mount ===")
 
@@ -773,7 +773,10 @@ func mount(commandArray []string) {
 		//Parametro obligatorio
 		if band_path {
 			if band_name {
+				// Buscar particion primaria
 				index_p := buscar_particion_p_e(val_path, val_name)
+
+				//fmt.Println("Index: ", index_p)
 				// Si existe
 				if index_p != -1 {
 					// Apertura del archivo
@@ -795,7 +798,8 @@ func mount(commandArray []string) {
 						master_boot_record := bytes_a_struct_mbr(lectura)
 
 						// Colocamos la particion ocupada
-						copy(master_boot_record.Mbr_partition[index_p].Part_status[:], "2")
+						copy(master_boot_record.Mbr_partition[index_p].Part_status[:], "1")
+
 
 						// Conversion de struct a bytes
 						mbr_byte := struct_a_bytes(master_boot_record)
@@ -825,64 +829,11 @@ func mount(commandArray []string) {
 					} else {
 						fmt.Println("[ERROR] No se encuentra el disco")
 					}
+				// si el estado devuelto es -2 es porque la particion ya esta montada	
+				}else if index_p == 3{
+					fmt.Println("[ERROR] La particion ya esta montada")
 				} else {
-					//Posiblemente logica
-					index_p := buscar_particion_l(val_path, val_name)
-
-					if index_p != -1 {
-						// Apertura del archivo
-						f, err := os.OpenFile(val_path, os.O_RDWR, 0660)
-
-						if err == nil {
-							ebr_empty := EBR{}
-
-							// Calculo del tamaño de struct en bytes
-							ebr2 := struct_a_bytes(ebr_empty)
-							sstruct := len(ebr2)
-
-							// Lectrura del archivo binario desde el inicio
-							lectura := make([]byte, sstruct)
-							f.Seek(int64(index_p), io.SeekStart)
-							f.Read(lectura)
-
-							// Conversion de bytes a struct
-							extended_boot_record := bytes_a_struct_ebr(lectura)
-
-							// Colocamos la particion ocupada
-							copy(extended_boot_record.Part_status[:], "2")
-
-							// Conversion de struct a bytes
-							mbr_byte := struct_a_bytes(extended_boot_record)
-
-							// Se posiciona al inicio del archivo para guardar la informacion del disco
-							f.Seek(int64(index_p), io.SeekStart)
-							f.Write(mbr_byte)
-							f.Close()
-
-							// Verifico si la particion ya esta montada
-							if Mount.Buscar_particion(val_path, val_name, lista_montajes) {
-								fmt.Println("[ERROR] La particion ya esta montada")
-							} else {
-								// Generacion de id
-								// Numero de particion
-								num := Mount.Buscar_numero(val_path, lista_montajes)
-								// Letra de disco
-								letra := Mount.Buscar_letra(val_path, lista_montajes)
-								// Terminacion de su Carnet (los ultimos dos digitos)
-								id := "92" + strconv.Itoa(num) + letra
-
-								var n *Mount.Nodo = Mount.New_nodo(id, val_path, val_name, letra, num)
-								Mount.Insertar(n, lista_montajes)
-								fmt.Println("[SUCCES] Particion montada con exito!")
-								Mount.Imprimir_contenido(lista_montajes)
-							}
-						} else {
-							fmt.Println("[ERROR] No se encuentra el disco")
-						}
-
-					} else {
-						fmt.Println("[ERROR] No se encuentra la particion a montar")
-					}
+					fmt.Println("[ERROR] Solo se puede montar particiones primarias")
 				}
 
 			} else {
@@ -2315,6 +2266,8 @@ func existe_particion(direccion string, nombre string) bool {
 	return false
 }
 
+
+
 // Busca particiones Primarias o Extendidas
 func buscar_particion_p_e(direccion string, nombre string) int {
 	// Apertura del archivo
@@ -2344,15 +2297,30 @@ func buscar_particion_p_e(direccion string, nombre string) int {
 			s_part_status = string(master_boot_record.Mbr_partition[i].Part_status[:])
 			s_part_status = strings.Trim(s_part_status, "\x00")
 
+			//fmt.Println("s_part_status: ", s_part_status)
+
 			if s_part_status != "1" {
 				// Antes de comparar limpio la cadena
 				s_part_name = string(master_boot_record.Mbr_partition[i].Part_name[:])
 				s_part_name = strings.Trim(s_part_name, "\x00")
+
 				if s_part_name == nombre {
+					//fmt.Println("s_part_name: ", s_part_name, "su estado es: ", s_part_status)
 					return i
 				}
-			}else{
-				fmt.Println("[ERROR] El estado de la particion es 1")
+			} else if s_part_status == "1"{
+				// Antes de comparar limpio la cadena
+				s_part_name = string(master_boot_record.Mbr_partition[i].Part_name[:])
+				s_part_name = strings.Trim(s_part_name, "\x00")
+
+				if s_part_name == nombre {
+					//si el estado es 1 y el nombre es igual al que se busca, entonces la particion ya fue montada
+					//fmt.Println("s_part_name: ", s_part_name, "su estado es: ", s_part_status)
+					
+					return 3
+				}
+
+				
 			}
 
 		}
@@ -2504,9 +2472,16 @@ func graficar_disk(direccion string, destino string) {
 	// Conversion de bytes a struct
 	master_boot_record := bytes_a_struct_mbr(lectura)
 
+	// Variables poara las graficas
+	label := "Reporte Disk"
+	label_loc := "t"
+
 	if master_boot_record.Mbr_tamano != empty {
 		if err == nil {
 			graphDot += "digraph G{\n\n"
+			graphDot += "label= " + "\"" +label + "\"" +"\n"
+			graphDot += "labelloc=" + "\"" + label_loc + "\"" + "\n"
+			graphDot += "fontsize=25"
 			graphDot += "  tbl [\n    shape=box\n    label=<\n"
 			graphDot += "     <table border='0' cellborder='2' width='600' height='150' color='dodgerblue1'>\n"
 			graphDot += "     <tr>\n"
@@ -2556,7 +2531,7 @@ func graficar_disk(direccion string, destino string) {
 						s_part_type = strings.Trim(s_part_type, "\x00")
 
 						if s_part_type == "p" {
-							graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Primaria <br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " por ciento del Disco </td>\n"
+							graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Primaria <br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 
 							if i != 3 {
 								// Obtengo el espacio utilizado
@@ -2587,7 +2562,7 @@ func graficar_disk(direccion string, destino string) {
 										porcentaje_real = float64(fragmentacion) * 100 / float64(total)
 										porcentaje_aux = (porcentaje_real * 500) / 100
 
-										graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " por ciento del Disco </td>\n"
+										graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 									}
 								}
 							} else {

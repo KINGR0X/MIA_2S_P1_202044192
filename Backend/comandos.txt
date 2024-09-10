@@ -44,4 +44,4 @@ mount -path="/home/elian/Escritorio/disk2.mia" -name=Particion1
 
 # REP
 # DISK
-rep -id=301A -path="/home/elian/Escritorio/diskA.jpg" -name=disk
+rep -id=921A -path="/home/elian/Escritorio/disk.jpg" -name=disk
