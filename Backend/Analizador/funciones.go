@@ -44,7 +44,7 @@ type Partition struct {
 
 // Extended Boot Record
 type EBR struct {
-	Part_status [100]byte
+	Part_mount [100]byte
 	Part_fit    [100]byte
 	Part_start  [100]byte
 	Part_size   [100]byte
@@ -267,15 +267,15 @@ func mkdisk(commandArray []string) {
 			if val_fit == "bf" {
 				// Activo la bandera del parametro y obtengo el caracter que me interesa
 				band_fit = true
-				val_fit = "bf"
+				val_fit = "b"
 			} else if val_fit == "ff" {
 				// Activo la bandera del parametro y obtengo el caracter que me interesa
 				band_fit = true
-				val_fit = "ff"
+				val_fit = "f"
 			} else if val_fit == "wf" {
 				// Activo la bandera del parametro y obtengo el caracter que me interesa
 				band_fit = true
-				val_fit = "wf"
+				val_fit = "w"
 			} else {
 				fmt.Println("[ERROR] El Valor del parametro -fit no es valido")
 				band_error = true
@@ -645,15 +645,15 @@ func fdisk(commandArray []string) {
 			if val_fit == "bf" {
 				// Activo la bandera del parametro y obtengo el caracter que me interesa
 				band_fit = true
-				val_fit = "bf"
+				val_fit = "b"
 			} else if val_fit == "ff" {
 				// Activo la bandera del parametro y obtengo el caracter que me interesa
 				band_fit = true
-				val_fit = "ff"
+				val_fit = "f"
 			} else if val_fit == "wf" {
 				// Activo la bandera del parametro y obtengo el caracter que me interesa
 				band_fit = true
-				val_fit = "wf"
+				val_fit = "w"
 			} else {
 				fmt.Println("[ERROR] El Valor del parametro -fit no es valido")
 				band_error = true
@@ -776,38 +776,13 @@ func mount(commandArray []string) {
 				// Buscar particion primaria
 				index_p := buscar_particion_p_e(val_path, val_name)
 
-				//fmt.Println("Index: ", index_p)
+				//Se pueden montar aun cuando su estado sea 1, esto por si se vuelve a iniciar el programa y se necesita cargar en RAM (lista)
 				// Si existe
 				if index_p != -1 {
 					// Apertura del archivo
 					f, err := os.OpenFile(val_path, os.O_RDWR, 0660)
 
 					if err == nil {
-						mbr_empty := MBR{}
-
-						// Calculo del tamaño de struct en bytes
-						mbr2 := struct_a_bytes(mbr_empty)
-						sstruct := len(mbr2)
-
-						// Lectrura del archivo binario desde el inicio
-						lectura := make([]byte, sstruct)
-						f.Seek(0, io.SeekStart)
-						f.Read(lectura)
-
-						// Conversion de bytes a struct
-						master_boot_record := bytes_a_struct_mbr(lectura)
-
-						// Colocamos la particion ocupada
-						copy(master_boot_record.Mbr_partition[index_p].Part_status[:], "1")
-
-
-						// Conversion de struct a bytes
-						mbr_byte := struct_a_bytes(master_boot_record)
-
-						// Se posiciona al inicio del archivo para guardar la informacion del disco
-						f.Seek(0, io.SeekStart)
-						f.Write(mbr_byte)
-						f.Close()
 
 						// Verifico si la particion ya esta montada (en la lista enlazada)
 						if Mount.Buscar_particion(val_path, val_name, lista_montajes) {
@@ -823,6 +798,51 @@ func mount(commandArray []string) {
 
 							var n *Mount.Nodo = Mount.New_nodo(id, val_path, val_name, letra, num)
 							Mount.Insertar(n, lista_montajes)
+
+							// === Actualizar el disco ===
+							mbr_empty := MBR{}
+
+							// Calculo del tamaño de struct en bytes
+							mbr2 := struct_a_bytes(mbr_empty)
+							sstruct := len(mbr2)
+
+							// Lectrura del archivo binario desde el inicio
+							lectura := make([]byte, sstruct)
+							f.Seek(0, io.SeekStart)
+							f.Read(lectura)
+
+							// Conversion de bytes a struct
+							master_boot_record := bytes_a_struct_mbr(lectura)
+
+							// Colocamos la particion ocupada
+							copy(master_boot_record.Mbr_partition[index_p].Part_status[:], "1")
+
+							copy(master_boot_record.Mbr_partition[index_p].Part_correlative[:], strconv.Itoa(num))
+
+							copy(master_boot_record.Mbr_partition[index_p].Part_id[:], id)
+
+							// Conversion de struct a bytes
+							mbr_byte := struct_a_bytes(master_boot_record)
+
+							// Se posiciona al inicio del archivo para guardar la informacion del disco
+							f.Seek(0, io.SeekStart)
+							f.Write(mbr_byte)
+							f.Close()
+
+							/*
+							auxi := ""
+
+							auxi = string(master_boot_record.Mbr_partition[index_p].Part_id[:])
+							auxi= strings.Trim(auxi, "\x00")
+
+							fmt.Println("[ACTUALIZADO] id: ", auxi)
+
+							auxi = string(master_boot_record.Mbr_partition[index_p].Part_correlative[:])
+							auxi= strings.Trim(auxi, "\x00")
+
+							fmt.Println("[ACTUALIZADO] correlative: ", auxi)
+							*/
+
 							fmt.Println("[SUCCES] Particion montada con exito!")
 							Mount.Imprimir_contenido(lista_montajes)
 						}
@@ -1011,7 +1031,7 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 		aux_fit = fit
 	} else {
 		// Por default se usa el peor ajuste
-		aux_fit = "wf"
+		aux_fit = "w"
 	}
 
 	// Se verifica si tiene Unidad
@@ -1123,7 +1143,7 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 						s_dsk_fit = strings.Trim(s_dsk_fit, "\x00")
 
 						/*  Primer Ajuste  */
-						if s_dsk_fit == "ff" {
+						if s_dsk_fit == "f" {
 							copy(master_boot_record.Mbr_partition[num_particion].Part_type[:], "p")
 							copy(master_boot_record.Mbr_partition[num_particion].Part_fit[:], aux_fit)
 
@@ -1152,6 +1172,13 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 							copy(master_boot_record.Mbr_partition[num_particion].Part_status[:], "0")
 							copy(master_boot_record.Mbr_partition[num_particion].Part_name[:], nombre)
 
+							// correlative es de tipo int, al inicio es 0
+							copy(master_boot_record.Mbr_partition[num_particion].Part_correlative[:], strconv.Itoa(0))
+
+							// Al inicio el ID es 0
+							copy(master_boot_record.Mbr_partition[num_particion].Part_id[:],"0")
+
+
 							// Se guarda de nuevo el MBR
 
 							// Conversion de struct a bytes
@@ -1177,7 +1204,7 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 
 							fmt.Println("[SUCCES] La Particion primaria fue creada con exito!")
 
-						} else if s_dsk_fit == "bf" {
+						} else if s_dsk_fit == "b" {
 							/*  Mejor Ajuste  */
 							best_index := num_particion
 
@@ -1262,6 +1289,12 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 							copy(master_boot_record.Mbr_partition[best_index].Part_size[:], strconv.Itoa(size_bytes))
 							copy(master_boot_record.Mbr_partition[best_index].Part_status[:], "0")
 							copy(master_boot_record.Mbr_partition[best_index].Part_name[:], nombre)
+
+														// correlative es de tipo int, al inicio es 0
+							copy(master_boot_record.Mbr_partition[num_particion].Part_correlative[:], strconv.Itoa(0))
+
+							// Al inicio el ID es 0
+							copy(master_boot_record.Mbr_partition[num_particion].Part_id[:],"0")
 
 							// Se guarda de nuevo el MBR
 
@@ -1375,6 +1408,12 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 							copy(master_boot_record.Mbr_partition[worst_index].Part_status[:], "0")
 							copy(master_boot_record.Mbr_partition[worst_index].Part_name[:], nombre)
 
+							// correlative es de tipo int, al inicio es 0
+							copy(master_boot_record.Mbr_partition[num_particion].Part_correlative[:], strconv.Itoa(0))
+
+							// Al inicio el ID es 0
+							copy(master_boot_record.Mbr_partition[num_particion].Part_id[:],"0")
+
 							// Se guarda de nuevo el MBR
 
 							// Conversion de struct a bytes
@@ -1432,7 +1471,7 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 		aux_fit = fit
 	} else {
 		// Por default es Peor ajuste
-		aux_fit = "wf"
+		aux_fit = "w"
 	}
 
 	// Verifico si tiene Unidad
@@ -1565,7 +1604,7 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 							s_dsk_fit = strings.Trim(s_dsk_fit, "\x00")
 
 							/*  Primer Ajuste  */
-							if s_dsk_fit == "ff" {
+							if s_dsk_fit == "f" {
 								copy(master_boot_record.Mbr_partition[num_particion].Part_type[:], "e")
 								copy(master_boot_record.Mbr_partition[num_particion].Part_fit[:], aux_fit)
 
@@ -1594,6 +1633,12 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 								copy(master_boot_record.Mbr_partition[num_particion].Part_status[:], "0")
 								copy(master_boot_record.Mbr_partition[num_particion].Part_name[:], nombre)
 
+								// correlative es de tipo int, al inicio es 0
+								copy(master_boot_record.Mbr_partition[num_particion].Part_correlative[:], strconv.Itoa(0))
+
+								// Al inicio el ID es 0
+								copy(master_boot_record.Mbr_partition[num_particion].Part_id[:],"0")
+
 								// Se guarda de nuevo el MBR
 
 								// Conversion de struct a bytes
@@ -1614,11 +1659,12 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 
 								extended_boot_record := EBR{}
 								copy(extended_boot_record.Part_fit[:], aux_fit)
-								copy(extended_boot_record.Part_status[:], "0")
+								copy(extended_boot_record.Part_mount[:], "0")
 								copy(extended_boot_record.Part_start[:], s_part_start)
 								copy(extended_boot_record.Part_size[:], "0")
 								copy(extended_boot_record.Part_next[:], "-1")
 								copy(extended_boot_record.Part_name[:], "")
+
 								ebr_byte := struct_a_bytes(extended_boot_record)
 								f.Write(ebr_byte)
 
@@ -1628,7 +1674,7 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 								}
 
 								fmt.Println("[SUCCES] La Particion extendida fue creada con exito!")
-							} else if s_dsk_fit == "bf" {
+							} else if s_dsk_fit == "b" {
 								/*  Mejor Ajuste  */
 								best_index := num_particion
 
@@ -1714,6 +1760,12 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 								copy(master_boot_record.Mbr_partition[best_index].Part_status[:], "0")
 								copy(master_boot_record.Mbr_partition[best_index].Part_name[:], nombre)
 
+								// correlative es de tipo int, al inicio es 0
+								copy(master_boot_record.Mbr_partition[num_particion].Part_correlative[:], strconv.Itoa(0))
+
+								// Al inicio el ID es 0
+								copy(master_boot_record.Mbr_partition[num_particion].Part_id[:],"0")
+
 								// Se guarda de nuevo el MBR
 
 								// Conversion de struct a bytes
@@ -1734,7 +1786,7 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 
 								extended_boot_record := EBR{}
 								copy(extended_boot_record.Part_fit[:], aux_fit)
-								copy(extended_boot_record.Part_status[:], "0")
+								copy(extended_boot_record.Part_mount[:], "0")
 								copy(extended_boot_record.Part_start[:], s_part_start_best)
 								copy(extended_boot_record.Part_size[:], "0")
 								copy(extended_boot_record.Part_next[:], "-1")
@@ -1834,6 +1886,12 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 								copy(master_boot_record.Mbr_partition[worst_index].Part_status[:], "0")
 								copy(master_boot_record.Mbr_partition[worst_index].Part_name[:], nombre)
 
+								// correlative es de tipo int, al inicio es 0
+								copy(master_boot_record.Mbr_partition[num_particion].Part_correlative[:], strconv.Itoa(0))
+
+								// Al inicio el ID es 0
+								copy(master_boot_record.Mbr_partition[num_particion].Part_id[:],"0")
+
 								// Se guarda de nuevo el MBR
 
 								// Conversion de struct a bytes
@@ -1854,7 +1912,7 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 
 								extended_boot_record := EBR{}
 								copy(extended_boot_record.Part_fit[:], aux_fit)
-								copy(extended_boot_record.Part_status[:], "0")
+								copy(extended_boot_record.Part_mount[:], "0")
 								copy(extended_boot_record.Part_start[:], s_part_start_worst)
 								copy(extended_boot_record.Part_size[:], "0")
 								copy(extended_boot_record.Part_next[:], "-1")
@@ -1904,7 +1962,7 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 		aux_fit = fit
 	} else {
 		// Por default es Peor ajuste
-		aux_fit = "wf"
+		aux_fit = "w"
 	}
 
 	// Verifico si tiene Unidad
@@ -2001,7 +2059,7 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 						if i_part_size < size_bytes {
 							fmt.Println("[ERROR] La particion logica a crear excede el espacio disponible de la particion extendida")
 						} else {
-							copy(extended_boot_record.Part_status[:], "0")
+							copy(extended_boot_record.Part_mount[:], "0")
 							copy(extended_boot_record.Part_fit[:], aux_fit)
 
 							// Posicion actual en el archivo
@@ -2108,7 +2166,7 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 
 							// Escribo el nuevo EBR
 							f.Seek(int64(i_part_start_ext+i_part_size_ext), io.SeekStart)
-							copy(extended_boot_record.Part_status[:], "0")
+							copy(extended_boot_record.Part_mount[:], "0")
 							copy(extended_boot_record.Part_fit[:], aux_fit)
 							// Posicion actual del archivo
 							pos_actual, _ = f.Seek(0, io.SeekCurrent)
@@ -2297,7 +2355,7 @@ func buscar_particion_p_e(direccion string, nombre string) int {
 			s_part_status = string(master_boot_record.Mbr_partition[i].Part_status[:])
 			s_part_status = strings.Trim(s_part_status, "\x00")
 
-			//fmt.Println("s_part_status: ", s_part_status)
+			//fmt.Println("FOR s_part_status: ", s_part_status)
 
 			if s_part_status != "1" {
 				// Antes de comparar limpio la cadena
@@ -2588,7 +2646,7 @@ func graficar_disk(direccion string, destino string) {
 									libre := (float64(mbr_size) - float64(p1)) + float64(len(mbr_empty_byte))
 									porcentaje_real = (float64(libre) * 100) / float64(total)
 									porcentaje_aux = (porcentaje_real * 500) / 100
-									graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " por ciento del Disco </td>\n"
+									graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 								}
 							}
 						} else {
@@ -2675,16 +2733,16 @@ func graficar_disk(direccion string, destino string) {
 
 									if porcentaje_real != 0 {
 										// Obtengo el espacio utilizado
-										s_part_status = string(extended_boot_record.Part_status[:])
+										s_part_status = string(extended_boot_record.Part_mount[:])
 										// Le quito los caracteres null
 										s_part_status = strings.Trim(s_part_status, "\x00")
 
 										if s_part_status != "1" {
 											graphDot += "     <td height='140'>EBR</td>\n"
-											graphDot += "     <td height='140'>Logica<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " por ciento del Disco </td>\n"
+											graphDot += "     <td height='140'>Logica<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 										} else {
 											// Espacio no asignado
-											graphDot += "      <td height='150'>Libre 1 <br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " por ciento del Disco </td>\n"
+											graphDot += "      <td height='150'>Libre 1 <br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 										}
 
 										// Obtengo el espacio utilizado
@@ -2722,7 +2780,7 @@ func graficar_disk(direccion string, destino string) {
 											porcentaje_real = (float64(parcial) * 100) / float64(total)
 
 											if porcentaje_real != 0 {
-												graphDot += "     <td height='150'>Libre 2<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " por ciento del Disco </td>\n"
+												graphDot += "     <td height='150'>Libre 2<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 											}
 											break
 
@@ -2739,7 +2797,7 @@ func graficar_disk(direccion string, destino string) {
 
 								}
 							} else {
-								graphDot += "     <td height='140'> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " por ciento del Disco </td>\n"
+								graphDot += "     <td height='140'> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 							}
 							graphDot += "     </tr>\n     </table>\n     </td>\n"
 
@@ -2773,7 +2831,7 @@ func graficar_disk(direccion string, destino string) {
 										porcentaje_real = float64(fragmentacion) * 100 / float64(total)
 										porcentaje_aux = (porcentaje_real * 500) / 100
 
-										graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " por ciento del Disco </td>\n"
+										graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 									}
 								}
 							} else {
@@ -2799,12 +2857,12 @@ func graficar_disk(direccion string, destino string) {
 									libre := (float64(mbr_size) - float64(p1)) + float64(len(mbr_empty_byte))
 									porcentaje_real = (float64(libre) * 100) / float64(total)
 									porcentaje_aux = porcentaje_real * 500 / 100
-									graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " por ciento del Disco </td>\n"
+									graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 								}
 							}
 						}
 					} else {
-						graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " por ciento del Disco </td>\n"
+						graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 					}
 				}
 			}
