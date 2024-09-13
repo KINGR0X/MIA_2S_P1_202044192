@@ -1,0 +1,79 @@
+<div style="padding-top: 3%">
+  <div class="bg-dark p-4 rounded m-5">
+    <div style="padding-left: 2%; padding-right: 2%">
+      <h4 style="color: white; margin-bottom: 1.5%; margin-top: 0.5%">
+        Archivo de Entrada:
+      </h4>
+      <textarea
+        class="form-control"
+        id="entradatxtarea"
+        rows="15"
+        [(ngModel)]="entrada"
+        name="entrada"
+      ></textarea>
+    </div>
+
+    <div style="padding-top: 1.5%; padding-left: 2%">
+      <input
+        #fileUpload
+        [hidden]="true"
+        type="file"
+        class="file-input"
+        (change)="onFileSelected($event)"
+      />
+      <button
+        class="btn btn-primary"
+        (click)="fileUpload.click()"
+        style="
+          margin-right: 25px;
+          background-color: #4379f2;
+          color: white;
+          border: none;
+        "
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" x2="12" y1="3" y2="15" />
+        </svg>
+      </button>
+      <button
+        class="btn btn-primary"
+        (click)="ejecutar()"
+        style="
+          margin-right: 25px;
+          background-color: #117554;
+          color: white;
+          border: none;
+        "
+      >
+        Ejecutar
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-dark p-4 rounded m-5">
+    <div style="padding-left: 2%; padding-right: 2%; padding-bottom: 1%">
+      <h4 style="color: white; margin-bottom: 1%">Salida de Comandos:</h4>
+      <textarea
+        style="color: rgb(255, 255, 255); background: black"
+        readonly
+        class="form-control"
+        id="salidatxtarea"
+        rows="15"
+        [(ngModel)]="salida"
+        name="salida"
+      ></textarea>
+    </div>
+  </div>
+</div>

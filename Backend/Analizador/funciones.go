@@ -2,20 +2,24 @@ package Analizador
 
 import (
 	"SISTEM_MIA/Mount"
-	"bufio"
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/rs/cors"
 )
 
 /*-------------------------- Structs --------------------------*/
@@ -101,36 +105,56 @@ type Bloque_archivo struct {
 	B_content [100]byte
 }
 
+// === Estructura para el API ===
+type Cmd_API struct {
+	Cmd string `json:"cmd"`
+}
+
 /*-------------------------- Variables Globales --------------------------*/
 // Mount y REP DISK
 var lista_montajes *Mount.Lista = Mount.New_lista()
 var graphDot string = ""
 
+var salida_comando string = ""
+
 /*-------------------------- Analizador --------------------------*/
 
 // Obtiene y lee el comando
 func Analizar() {
-	finalizar := false
-	reader := bufio.NewReader(os.Stdin)
+	mux := http.NewServeMux()
 
-	//  For para leer comandos
-	for !finalizar {
-		fmt.Print("Ingrese un comando: ")
-		// Lee hasta que presione ENTER
-		comando, _ := reader.ReadString('\n')
+	/* Ejemplo 7 */
+	// Endpoint tipo POST
+	mux.HandleFunc("/analizar", func(w http.ResponseWriter, r *http.Request) {
+		// Configuracion de la cabecera
+		w.Header().Set("Content-Type", "application/json")
+		var Content Cmd_API
+		body, _ := io.ReadAll(r.Body)
+		// Arreglo  de bytes a Json
+		json.Unmarshal(body, &Content)
+		// Ejecuta el comando
+		split_cmd(Content.Cmd)
+		// Respuesta del servidor
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"result": "` + salida_comando + `" }`))
+		// Limpio la salida de comandos
+		salida_comando = ""
+	})
 
-		if strings.Contains(comando, "exit") {
-			/* SALIR */
-			finalizar = true
-		} else if strings.Contains(comando, "EXIT") {
-			/* SALIR */
-			finalizar = true
-		} else {
-			// Si no es vacio o el comando EXIT
-			if comando != "" && comando != "exit\n" && comando != "EXIT\n" {
-				// Obtener comando y parametros
-				split_comando(comando)
-			}
+	fmt.Println("Servidor en el puerto 5000")
+	// Configuracion de cors
+	handler := cors.Default().Handler(mux)
+	log.Fatal(http.ListenAndServe(":5000", handler))
+}
+
+// Ejecuta comando linea por linea en el frontend
+func split_cmd(cmd string) {
+	arr_com := strings.Split(cmd, "\n")
+
+	for i := 0; i < len(arr_com); i++ {
+		if arr_com[i] != "" {
+			split_comando(arr_com[i])
+			salida_comando += "\\n"
 		}
 	}
 }
