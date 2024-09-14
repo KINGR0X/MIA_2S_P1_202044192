@@ -1,9 +1,7 @@
 // === Se usa para los comandos Mount y REP (reportes) DISK ===
 package Mount
 
-import (
-	"fmt"
-)
+import "strconv"
 
 type Nodo struct {
 	id        string
@@ -153,17 +151,20 @@ func Obtener_nodo(id string, lista *Lista) *Nodo {
 }
 
 // Imprime el contenido de la lista
-func Imprimir_contenido(lista *Lista) {
+func Imprimir_contenido(lista *Lista) string {
 	aux := lista.Primero
+	cad := ""
 
 	for aux != nil {
-		fmt.Println("===========================================================")
-		fmt.Println("Id:        ", aux.id)
-		fmt.Println("Direccion: ", aux.Direccion)
-		fmt.Println("Nombre:    ", aux.Nombre)
-		fmt.Println("Letra:     ", aux.Letra)
-		fmt.Println("Numero:    ", aux.Num)
-		fmt.Println("==========================================================")
+		cad += "===========================================================\\n"
+		cad += "Id:        " + aux.id + "\\n"
+		cad += "Direccion: " + aux.Direccion + "\\n"
+		cad += "Nombre:    " + aux.Nombre + "\\n"
+		cad += "Letra:     " + aux.Letra + "\\n"
+		cad += "Numero:    " + strconv.Itoa(aux.Num) + "\\n"
+		cad += "==========================================================\\n"
 		aux = aux.Siguiente
 	}
+
+	return cad
 }

@@ -873,7 +873,7 @@ func mount(commandArray []string) {
 
 							salida_consola += "\\n" +"[SUCCES] Particion montada con exito!"
 							//salida_consola += Mount.Imprimir_contenido(lista_montajes)
-							Mount.Imprimir_contenido(lista_montajes)
+							salida_consola +=  Mount.Imprimir_contenido(lista_montajes)
 						}
 					} else {
 						salida_consola += "\\n" +"[ERROR] No se encuentra el disco"
@@ -2562,8 +2562,6 @@ func graficar_disk(direccion string, destino string) {
 	//Obtener unicamente el nombre del archivo
 	nombre := filepath.Base(direccion)
 
-
-
 	// Variables poara las graficas
 	label := "Reporte " + nombre
 	label_loc := "t"
@@ -2589,7 +2587,14 @@ func graficar_disk(direccion string, destino string) {
 			var espacioUsado float64
 			espacioUsado = 0
 
+			// Recorro las 4 particiones
 			for i := 0; i < 4; i++ {
+				//nombre de la particion actual
+				//s_part_name := string(master_boot_record.Mbr_partition[i].Part_name[:])
+				// Le quito los caracteres null
+				//s_part_name = strings.Trim(s_part_name, "\x00")
+
+				
 				// Obtengo el espacio utilizado
 				s_part_s := string(master_boot_record.Mbr_partition[i].Part_size[:])
 				// Le quito los caracteres null
@@ -2603,24 +2608,28 @@ func graficar_disk(direccion string, destino string) {
 				// Le quito los caracteres null
 				s_part_start = strings.Trim(s_part_start, "\x00")
 
+
+				// verifica si la particion existe
 				if s_part_start != "-1" {
+					//fmt.Println("Entre con Particion: ", s_part_name)
+					
 					var porcentaje_real float64
 					porcentaje_real = (float64(parcial) * 100) / float64(total)
 					var porcentaje_aux float64
 					porcentaje_aux = (porcentaje_real * 500) / 100
+					
 
 					espacioUsado += porcentaje_real
+
 
 					// Obtengo el espacio utilizado
 					s_part_status := string(master_boot_record.Mbr_partition[i].Part_status[:])
 
-					fmt.Println("graph s_part_status: ", s_part_status)
-
 					// Le quito los caracteres null
 					s_part_status = strings.Trim(s_part_status, "\x00")
-					
-					// Revisar si la particion esta montada
-					if s_part_status != "0" {
+
+					// De momento siempre se va a cumplir porque no importa si esta montada o no 
+					if s_part_status != "2" {
 						// Obtengo el espacio utilizado
 						s_part_type := string(master_boot_record.Mbr_partition[i].Part_type[:])
 						// Le quito los caracteres null
@@ -2629,6 +2638,7 @@ func graficar_disk(direccion string, destino string) {
 						if s_part_type == "p" {
 							graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Primaria <br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 
+							// En caso de que no sea la ultima particion
 							if i != 3 {
 								// Obtengo el espacio utilizado
 								s_part_s = string(master_boot_record.Mbr_partition[i].Part_size[:])
@@ -2902,8 +2912,20 @@ func graficar_disk(direccion string, destino string) {
 					} else {
 						graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 					}
+				}else if (i == 3){
+
+					// Obtener el restante de 100
+					s_restante := float64(100) - espacioUsado 
+
+					// 
+					var porcentaje_aux = (s_restante * 500) / 100
+					
+
+					graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(s_restante, 'g', 3, 64) + " % del Disco </td>\n"
 				}
 			}
+
+			
 
 			graphDot += "     </tr> \n     </table>        \n>];\n\n}"
 
