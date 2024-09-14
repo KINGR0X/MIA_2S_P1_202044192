@@ -115,7 +115,7 @@ type Cmd_API struct {
 var lista_montajes *Mount.Lista = Mount.New_lista()
 var graphDot string = ""
 
-var salida_comando string = ""
+var salida_consola string = ""
 
 /*-------------------------- Analizador --------------------------*/
 
@@ -126,6 +126,9 @@ func Analizar() {
 	/* Ejemplo 7 */
 	// Endpoint tipo POST
 	mux.HandleFunc("/analizar", func(w http.ResponseWriter, r *http.Request) {
+
+		fmt.Println("Se recibio una peticion POST")
+
 		// Configuracion de la cabecera
 		w.Header().Set("Content-Type", "application/json")
 		var Content Cmd_API
@@ -136,15 +139,19 @@ func Analizar() {
 		split_cmd(Content.Cmd)
 		// Respuesta del servidor
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"result": "` + salida_comando + `" }`))
+		w.Write([]byte(`{"result": "` + salida_consola + `" }`))
 		// Limpio la salida de comandos
-		salida_comando = ""
+		salida_consola = ""
+
+		// Imprimir por consola un aviso 
+		fmt.Println("Comandos ejecutados")
 	})
 
-	fmt.Println("Servidor en el puerto 5000")
+	salida_consola += "Servidor iniciado en el puerto 5100" + "\\n"
+	fmt.Println("Servidor iniciado en el puerto 5100")
 	// Configuracion de cors
 	handler := cors.Default().Handler(mux)
-	log.Fatal(http.ListenAndServe(":5000", handler))
+	log.Fatal(http.ListenAndServe(":5100", handler))
 }
 
 // Ejecuta comando linea por linea en el frontend
@@ -154,7 +161,7 @@ func split_cmd(cmd string) {
 	for i := 0; i < len(arr_com); i++ {
 		if arr_com[i] != "" {
 			split_comando(arr_com[i])
-			salida_comando += "\\n"
+			salida_consola += "\\n"
 		}
 	}
 }
@@ -172,7 +179,7 @@ func split_comando(comando string) {
 	if strings.Contains(comando, "#") {
 		// Comentario
 		band_comentario = true
-		fmt.Println(comando)
+		salida_consola += "\\n" + comando 
 	} else {
 		// Comando con Parametros, separa por espacio y guion (-)
 		commandArray = strings.Split(comando, " -")
@@ -208,18 +215,15 @@ func ejecutar_comando(commandArray []string) {
 		rep(commandArray)
 	} else {
 		/* ERROR */
-		fmt.Println("[ERROR] El comando no fue reconocido...")
+		salida_consola += "\\n" + "[ERROR] El comando no fue reconocido" 
 	}
 }
 
 /*-------------------------- Comandos --------------------------*/
 
 /* MKDISK*/
-
-// mkdisk -Size=3000 -unit=K -path=/home/user/Disco1.mia
-
 func mkdisk(commandArray []string) {
-	fmt.Println("=== Se ingreso al comando mkdisk ===")
+	salida_consola += "\\n" + "=== Se ingreso al comando mkdisk ==="
 
 	// Variables para los valores de los parametros
 	val_size := 0
@@ -249,7 +253,7 @@ func mkdisk(commandArray []string) {
 
 			// Error si el parametro ya fue ingresado
 			if band_size {
-				fmt.Println("[ERROR] El parametro -size ya fue ingresado")
+				salida_consola += "\\n" +"[ERROR] El parametro -size ya fue ingresado" 
 				band_error = true
 				break
 			}
@@ -264,14 +268,14 @@ func mkdisk(commandArray []string) {
 			// ERROR de conversion
 			if err != nil {
 				band_error = true
-				fmt.Println("[ERROR] ", err)
+				salida_consola += "\\n" +"[ERROR] al convertir el parametro -size a entero"
 				break
 			}
 
 			// size debe de ser positivo y mayor a 0
 			if val_size <= 0 {
 				band_error = true
-				fmt.Println("[ERROR] El parametro -size es negativo ")
+				salida_consola += "\\n" +"[ERROR] El parametro -size es negativo "
 			}
 
 		/* PARAMETRO OPCIONAL -fit */
@@ -279,14 +283,14 @@ func mkdisk(commandArray []string) {
 
 			// Error si el parametro ya fue ingresado
 			if band_fit {
-				fmt.Println("[ERROR] El parametro -fit ya fue ingresado")
+				salida_consola += "\\n" +"[ERROR] El parametro -fit ya fue ingresado"
 				band_error = true
 				break
 			}
 
 			val_fit = strings.ToLower(val_data)
 
-			//fmt.Println("FIT: "+ val_fit)
+			//salida_consola += "\\n" +"FIT: "+ val_fit
 
 			if val_fit == "bf" {
 				// Activo la bandera del parametro y obtengo el caracter que me interesa
@@ -301,7 +305,7 @@ func mkdisk(commandArray []string) {
 				band_fit = true
 				val_fit = "w"
 			} else {
-				fmt.Println("[ERROR] El Valor del parametro -fit no es valido")
+				salida_consola += "\\n" +"[ERROR] El Valor del parametro -fit no es valido"
 				band_error = true
 				break
 			}
@@ -311,28 +315,28 @@ func mkdisk(commandArray []string) {
 
 			// Error si el parametro ya fue ingresado
 			if band_unit {
-				fmt.Println("[ERROR] El parametro -unit ya fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -unit ya fue ingresado..."
 				band_error = true
 				break
 			}		
 
 			val_unit = strings.ToLower(val_data)
 
-			//fmt.Println("UNIT: "+ val_unit)
+			//salida_consola += "\\n" +"UNIT: "+ val_unit
 
 			if val_unit == "k" || val_unit == "m" {
 				// Activo la bandera del parametro
 				band_unit = true
 			} else {
 				// Parametro no valido
-				fmt.Println("[ERROR] El Valor del parametro -unit no es valido")
+				salida_consola += "\\n" +"[ERROR] El Valor del parametro -unit no es valido"
 				band_error = true
 			}
 
 		/* PARAMETRO OBLIGATORIO -PATH */
 		case strings.Contains(data, "path="):
 			if band_path {
-				fmt.Println("[ERROR] El parametro -path ya fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -path ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -345,7 +349,7 @@ func mkdisk(commandArray []string) {
 			
 		/* PARAMETRO NO VALIDO */
 		default:
-			fmt.Println("[ERROR] Parametro no valido")
+			salida_consola += "\\n" +"[ERROR] Parametro no valido"
 		}
 	}
 
@@ -423,7 +427,7 @@ func mkdisk(commandArray []string) {
 
 				// ERROR
 				if err != nil {
-					fmt.Println("[ERROR] ", err)
+					salida_consola += "\\n" +"[ERROR] al crear el disco"
 				}
 
 				// Se escriben los datos en disco
@@ -433,7 +437,7 @@ func mkdisk(commandArray []string) {
 
 				// ERROR
 				if err != nil {
-					fmt.Println("[ERROR] ", err)
+					salida_consola += "\\n" +"[ERROR] al abrir el disco"
 				} else {
 					// Conversion de struct a bytes
 					mbr_byte := struct_a_bytes(master_boot_record)
@@ -443,7 +447,7 @@ func mkdisk(commandArray []string) {
 					f.Write(mbr_byte)
 					f.Close()
 
-					fmt.Println("[SUCCES] --- El disco fue creado con exito ---")
+					salida_consola += "\\n" +"[SUCCES] El disco fue creado con exito"
 				}
 			}
 		}
@@ -452,7 +456,7 @@ func mkdisk(commandArray []string) {
 
 /* RMDISK (Eliminar disco) */
 func rmdisk(commandArray []string) {
-	fmt.Println("=== Se ingreso el comando rmdisk ===")
+	salida_consola += "\\n" +"=== Se ingreso el comando rmdisk ==="
 
 	// Variables para los valores de los parametros
 	val_path := ""
@@ -472,7 +476,7 @@ func rmdisk(commandArray []string) {
 		/* PARAMETRO OBLIGATORIO -> PATH */
 		case strings.Contains(data, "path="):
 			if band_path {
-				fmt.Println("[ERROR] El parametro -path ya fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -path ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -484,7 +488,7 @@ func rmdisk(commandArray []string) {
 			val_path = strings.Replace(val_data, "\"", "", 2)
 		/* PARAMETRO NO VALIDO */
 		default:
-			fmt.Println("[ERROR] Parametro no valido")
+			salida_consola += "\\n" +"[ERROR] Parametro no valido"
 		}
 	}
 
@@ -499,7 +503,7 @@ func rmdisk(commandArray []string) {
 			if e != nil {
 				// Si no existe
 				if os.IsNotExist(e) {
-					fmt.Println("[ERROR] No existe el disco que desea eliminar")
+					salida_consola += "\\n" +"[ERROR] No existe el disco que desea eliminar"
 					band_path = false
 				}
 			} else {
@@ -520,17 +524,17 @@ func rmdisk(commandArray []string) {
 
 					// ERROR
 					if err != nil {
-						fmt.Println("[ERROR] ", err)
+						salida_consola += "\\n" +"[ERROR] El Disco no fue eliminado"
 					} else {
-						fmt.Println("[SUCCES] El Disco fue eliminado")
+						salida_consola += "\\n" +"[SUCCES] El Disco fue eliminado"
 					}
 
 					band_path = false
 				} else if opcion == "n" || opcion == "N" {
-					fmt.Println("[MENSAJE] EL disco no fue eliminado")
+					salida_consola += "\\n" +"[MENSAJE] EL disco no fue eliminado"
 					band_path = false
 				} else {
-					fmt.Println("[ERROR] Opcion no valida intentalo de nuevo")
+					salida_consola += "\\n" +"[ERROR] Opcion no valida intentalo de nuevo"
 				}
 			}
 		}
@@ -540,7 +544,7 @@ func rmdisk(commandArray []string) {
 
 /* FDISK */
 func fdisk(commandArray []string) {
-	fmt.Println("=== Se ingreso el comando fdisk ===")
+	salida_consola += "\\n" +"=== Se ingreso el comando fdisk ==="
 
 	// Variables para los valores de los parametros
 	val_size := 0
@@ -572,7 +576,7 @@ func fdisk(commandArray []string) {
 		case strings.Contains(data, "size="):
 			// Valido si el parametro ya fue ingresado
 			if band_size {
-				fmt.Println("[ERROR] El parametro -size ya fue ingresado")
+				salida_consola += "\\n" +"[ERROR] El parametro -size ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -586,7 +590,7 @@ func fdisk(commandArray []string) {
 
 			// ERROR de conversion
 			if err != nil {
-				fmt.Println("[ERROR] ", err)
+				salida_consola += "\\n" +"[ERROR] al convertir el parametro -size a entero"
 				band_error = true
 				break
 			}
@@ -594,14 +598,14 @@ func fdisk(commandArray []string) {
 			// Valido que el tamaño sea positivo
 			if val_size <= 0 {
 				band_error = true
-				fmt.Println("[ERROR] El parametro -size es negativo")
+				salida_consola += "\\n" +"[ERROR] El parametro -size es negativo"
 			}
 			
 		/* PARAMETRO OPCIONAL -> UNIT */
 		case strings.Contains(data, "unit="):
 			// Valido si el parametro ya fue ingresado
 			if band_unit {
-				fmt.Println("[ERROR] El parametro -unit ya fue ingresado")
+				salida_consola += "\\n" +"[ERROR] El parametro -unit ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -614,14 +618,14 @@ func fdisk(commandArray []string) {
 				band_unit = true
 			} else {
 				// Parametro no valido
-				fmt.Println("[ERROR] El Valor del parametro -unit no es valido")
+				salida_consola += "\\n" +"[ERROR] El Valor del parametro -unit no es valido"
 				band_error = true
 			}
 
 		/* PARAMETRO OBLIGATORIO -PATH */
 		case strings.Contains(data, "path="):
 			if band_path {
-				fmt.Println("[ERROR] El parametro -path ya fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -path ya fue ingresado..."
 				band_error = true
 				break
 			}
@@ -635,7 +639,7 @@ func fdisk(commandArray []string) {
 		/* PARAMETRO OPCIONAL -TYPE */
 		case strings.Contains(data, "type="):
 			if band_type {
-				fmt.Println("[ERROR] El parametro -type ya fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -type ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -649,7 +653,7 @@ func fdisk(commandArray []string) {
 				band_type = true
 			} else {
 				// Parametro no valido
-				fmt.Println("[ERROR] El Valor del parametro -type no es valido")
+				salida_consola += "\\n" +"[ERROR] El Valor del parametro -type no es valido"
 				band_error = true
 			}
 
@@ -657,7 +661,7 @@ func fdisk(commandArray []string) {
 		case strings.Contains(data, "fit="):
 			// Valido si el parametro ya fue ingresado
 			if band_fit {
-				fmt.Println("[ERROR] El parametro -fit ya fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -fit ya fue ingresado..."
 				band_error = true
 				break
 			}
@@ -679,7 +683,7 @@ func fdisk(commandArray []string) {
 				band_fit = true
 				val_fit = "w"
 			} else {
-				fmt.Println("[ERROR] El Valor del parametro -fit no es valido")
+				salida_consola += "\\n" +"[ERROR] El Valor del parametro -fit no es valido"
 				band_error = true
 				break
 			}
@@ -688,7 +692,7 @@ func fdisk(commandArray []string) {
 		case strings.Contains(data, "name="):
 			// Valido si el parametro ya fue ingresado
 			if band_name {
-				fmt.Println("[ERROR] El parametro -name ya fue ingresado")
+				salida_consola += "\\n" +"[ERROR] El parametro -name ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -700,7 +704,7 @@ func fdisk(commandArray []string) {
 			val_name = strings.TrimSpace(strings.Replace(val_data, "\"", "", 2))
 		/* PARAMETRO NO VALIDO */
 		default:
-			fmt.Println("[ERROR] Parametro no valido")
+			salida_consola += "\\n" +"[ERROR] Parametro no valido"
 		}
 	}
 
@@ -725,13 +729,13 @@ func fdisk(commandArray []string) {
 						crear_particion_primaria(val_path, val_name, val_size, val_fit, val_unit)
 					}
 				} else {
-					fmt.Println("[ERROR] El parametro -name no fue ingresado")
+					salida_consola += "\\n" +"[ERROR] El parametro -name no fue ingresado"
 				}
 			} else {
-				fmt.Println("[ERROR] El parametro -path no fue ingresado")
+				salida_consola += "\\n" +"[ERROR] El parametro -path no fue ingresado"
 			}
 		} else {
-			fmt.Println("[ERROR] El parametro -size no fue ingresado")
+			salida_consola += "\\n" +"[ERROR] El parametro -size no fue ingresado"
 		}
 	}
 }
@@ -739,7 +743,7 @@ func fdisk(commandArray []string) {
 
 /* MOUNT, solo se montaran primarias*/
 func mount(commandArray []string) {
-	fmt.Println("=== Se ingreso el comando mount ===")
+	salida_consola += "\\n" +"=== Se ingreso el comando mount ==="
 
 	// Variables para los valores de los parametros
 	val_path := ""
@@ -761,7 +765,7 @@ func mount(commandArray []string) {
 		/* PARAMETRO OBLIGATORIO -PATH */
 		case strings.Contains(data, "path="):
 			if band_path {
-				fmt.Println("[ERROR] El parametro -path ya fue ingresado")
+				salida_consola += "\\n" +"[ERROR] El parametro -path ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -776,7 +780,7 @@ func mount(commandArray []string) {
 		case strings.Contains(data, "name="):
 			// Valido si el parametro ya fue ingresado
 			if band_name {
-				fmt.Println("[ERROR] El parametro -name ya fue ingresado")
+				salida_consola += "\\n" +"[ERROR] El parametro -name ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -788,7 +792,7 @@ func mount(commandArray []string) {
 			val_name = strings.TrimSpace(strings.Replace(val_data, "\"", "", 2))
 		/* PARAMETRO NO VALIDO */
 		default:
-			fmt.Println("[ERROR] Parametro no valido")
+			salida_consola += "\\n" +"[ERROR] Parametro no valido"
 		}
 	}
 
@@ -810,7 +814,7 @@ func mount(commandArray []string) {
 
 						// Verifico si la particion ya esta montada (en la lista enlazada)
 						if Mount.Buscar_particion(val_path, val_name, lista_montajes) {
-							fmt.Println("[ERROR] La particion ya esta montada")
+							salida_consola += "\\n" +"[ERROR] La particion ya esta montada"
 						} else {
 							// Numero de particion
 							num := Mount.Buscar_numero(val_path, lista_montajes)
@@ -859,39 +863,40 @@ func mount(commandArray []string) {
 							auxi = string(master_boot_record.Mbr_partition[index_p].Part_id[:])
 							auxi= strings.Trim(auxi, "\x00")
 
-							fmt.Println("[ACTUALIZADO] id: ", auxi)
+							salida_consola += "\\n" +"[ACTUALIZADO] id: ", auxi
 
 							auxi = string(master_boot_record.Mbr_partition[index_p].Part_correlative[:])
 							auxi= strings.Trim(auxi, "\x00")
 
-							fmt.Println("[ACTUALIZADO] correlative: ", auxi)
+							salida_consola += "\\n" +"[ACTUALIZADO] correlative: ", auxi
 							*/
 
-							fmt.Println("[SUCCES] Particion montada con exito!")
+							salida_consola += "\\n" +"[SUCCES] Particion montada con exito!"
+							//salida_consola += Mount.Imprimir_contenido(lista_montajes)
 							Mount.Imprimir_contenido(lista_montajes)
 						}
 					} else {
-						fmt.Println("[ERROR] No se encuentra el disco")
+						salida_consola += "\\n" +"[ERROR] No se encuentra el disco"
 					}
 				// si el estado devuelto es -2 es porque la particion ya esta montada	
 				}else if index_p == 3{
-					fmt.Println("[ERROR] La particion ya esta montada")
+					salida_consola += "\\n" +"[ERROR] La particion ya esta montada"
 				} else {
-					fmt.Println("[ERROR] Solo se puede montar particiones primarias")
+					salida_consola += "\\n" +"[ERROR] Solo se puede montar particiones primarias"
 				}
 
 			} else {
-				fmt.Println("[ERROR] Parametro -name no definido")
+				salida_consola += "\\n" +"[ERROR] Parametro -name no definido"
 			}
 		} else {
-			fmt.Println("[ERROR] Parametro -path no definido")
+			salida_consola += "\\n" +"[ERROR] Parametro -path no definido"
 		}
 	}
 }
 
 /* REP */
 func rep(commandArray []string) {
-	fmt.Println("=== Se ingreso el comando rep ===")
+	salida_consola += "\\n" +"=== Se ingreso el comando rep ==="
 	// Variables para los valores de los parametros
 	val_name := ""
 	val_path := ""
@@ -919,7 +924,7 @@ func rep(commandArray []string) {
 		case strings.Contains(data, "name="):
 			// Valido si el parametro ya fue ingresado
 			if band_name {
-				fmt.Println("[ERROR] El parametro -name ya fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -name ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -933,7 +938,7 @@ func rep(commandArray []string) {
 		/* PARAMETRO OBLIGATORIO -PATH */
 		case strings.Contains(data, "path="):
 			if band_path {
-				fmt.Println("[ERROR] El parametro -path ya fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -path ya fue ingresado..."
 				band_error = true
 				break
 			}
@@ -948,7 +953,7 @@ func rep(commandArray []string) {
 		case strings.Contains(data, "id="):
 			// Valido si el parametro ya fue ingresado
 			if band_id {
-				fmt.Println("[ERROR] El parametro -id ya fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -id ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -962,7 +967,7 @@ func rep(commandArray []string) {
 		/* PARAMETRO OBLIGATORIO -RUTA */
 		case strings.Contains(data, "ruta="):
 			if band_ruta {
-				fmt.Println("[ERROR] El parametro -ruta ya fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -ruta ya fue ingresado"
 				band_error = true
 				break
 			}
@@ -971,7 +976,7 @@ func rep(commandArray []string) {
 			band_ruta = true
 		/* PARAMETRO NO VALIDO */
 		default:
-			fmt.Println("[ERROR] Parametro no valido...")
+			salida_consola += "\\n" +"[ERROR] Parametro no valido"
 		}
 	}
 
@@ -987,19 +992,19 @@ func rep(commandArray []string) {
 							graficar_disk(aux.Direccion, val_path)
 						}
 					} else {
-						fmt.Println("[ERROR] No encuentra la particion...")
+						salida_consola += "\\n" +"[ERROR] No encuentra la particion..."
 					}
 				} else {
-					fmt.Println("[ERROR] El parametro -id no fue ingresado...")
+					salida_consola += "\\n" +"[ERROR] El parametro -id no fue ingresado..."
 				}
 			} else {
-				fmt.Println("[ERROR] El parametro -name no fue ingresado...")
+				salida_consola += "\\n" +"[ERROR] El parametro -name no fue ingresado"
 			}
 		} else {
-			fmt.Println("[ERROR] El parametro -path no fue ingresado...")
+			salida_consola += "\\n" +"[ERROR] El parametro -path no fue ingresado"
 		}
 	}
-	fmt.Println("[MENSAJE] El comando REP aqui finaliza")
+	salida_consola += "\\n" +"[SUCCES] Reporte Genrado con exito"
 }
 
 /*-------------------------- Funciones Auxiliares --------------------------*/
@@ -1010,7 +1015,7 @@ func crear_disco(ruta string) {
 
 	// ERROR
 	if err != nil {
-		fmt.Println("[ERROR] ", err)
+		salida_consola += "\\n" +"[ERROR] Al abrir el archivo" 
 	}
 
 	// Crea el directiorio de forma recursiva
@@ -1020,7 +1025,7 @@ func crear_disco(ruta string) {
 
 	// ERROR
 	if err != nil {
-		fmt.Println("[ERROR] ", err)
+		salida_consola += "\\n" +"[ERROR] al crear el disco"
 	}
 
 	// Da los permisos al directorio
@@ -1030,13 +1035,13 @@ func crear_disco(ruta string) {
 
 	// ERROR
 	if err != nil {
-		fmt.Println("[ERROR] ", err)
+		salida_consola += "\\n" +"[ERROR] al dar permisos al disco"
 	}
 
 	// Verifica si existe la ruta para el archivo
 	if _, err := os.Stat(filepath.Dir(aux)); errors.Is(err, os.ErrNotExist) {
 		if err != nil {
-			fmt.Println("[FAILURE] No se pudo crear el disco...")
+			salida_consola += "\\n" +"[FAILURE] No se pudo crear el disco"
 		}
 	}
 }
@@ -1082,7 +1087,7 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 
 	// ERROR
 	if err != nil {
-		fmt.Println("[ERROR] No existe un disco duro con ese nombre")
+		salida_consola += "\\n" +"[ERROR] No existe un disco duro con ese nombre"
 	} else {
 		// Bandera para ver si hay una particion disponible
 		band_particion := false
@@ -1155,8 +1160,8 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 
 				espacio_disponible := i_tamaño_disco - espacio_usado
 
-				fmt.Println("[ESPACIO DISPONIBLE] ", espacio_disponible, " Bytes")
-				fmt.Println("[ESPACIO NECESARIO] ", size_bytes, " Bytes")
+				salida_consola += "\\n" +"[ESPACIO DISPONIBLE] " + strconv.Itoa(espacio_disponible) + " Bytes"
+				salida_consola += "\\n" +"[ESPACIO NECESARIO] " + strconv.Itoa(size_bytes) + " Bytes"
 
 				// Verifico que haya espacio suficiente
 				if espacio_disponible >= size_bytes {
@@ -1226,7 +1231,7 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 								f.Write([]byte{1})
 							}
 
-							fmt.Println("[SUCCES] La Particion primaria fue creada con exito!")
+							salida_consola += "\\n" +"[SUCCES] La Particion primaria fue creada con exito!"
 
 						} else if s_dsk_fit == "b" {
 							/*  Mejor Ajuste  */
@@ -1345,7 +1350,7 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 								f.Write([]byte{1})
 							}
 
-							fmt.Println("[SUCCES] La Particion primaria fue creada con exito!")
+							salida_consola += "\\n" +"[SUCCES] La Particion primaria fue creada con exito!"
 						} else {
 							/*  Peor ajuste  */
 							worst_index := num_particion
@@ -1461,20 +1466,20 @@ func crear_particion_primaria(direccion string, nombre string, size int, fit str
 								f.Write([]byte{1})
 							}
 
-							fmt.Println("[SUCCES] La Particion primaria fue creada con exito!")
+							salida_consola += "\\n" +"[SUCCES] La Particion primaria fue creada con exito!"
 						}
 					} else {
-						fmt.Println("[ERROR] Ya existe una particion creada con ese nombre")
+						salida_consola += "\\n" +"[ERROR] Ya existe una particion creada con ese nombre"
 					}
 				} else {
-					fmt.Println("[ERROR] La particion que desea crear excede el espacio disponible")
+					salida_consola += "\\n" +"[ERROR] La particion que desea crear excede el espacio disponible"
 				}
 			} else {
-				fmt.Println("[ERROR] La suma de particiones primarias y extendidas no debe exceder de 4 particiones")
-				fmt.Println("[MENSAJE] Se recomienda eliminar alguna particion para poder crear otra particion primaria o extendida")
+				salida_consola += "\\n" +"[ERROR] La suma de particiones primarias y extendidas no debe exceder de 4 particiones"
+				salida_consola += "\\n" +"[MENSAJE] Se recomienda eliminar alguna particion para poder crear otra particion primaria o extendida"
 			}
 		} else {
-			fmt.Println("[ERROR] el disco se encuentra vacio")
+			salida_consola += "\\n" +"[ERROR] el disco se encuentra vacio"
 		}
 
 		f.Close()
@@ -1522,7 +1527,7 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 
 	// ERROR
 	if err != nil {
-		fmt.Println("[ERROR] ", err)
+		salida_consola += "\\n" +"[ERROR] al abrir el archivo"
 	} else {
 		// Procede a leer el archivo
 		band_particion := false
@@ -1616,8 +1621,8 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 
 					espacio_disponible := i_tamaño_disco - espacio_usado
 
-					fmt.Println("[ESPACIO DISPONIBLE] ", espacio_disponible, " Bytes")
-					fmt.Println("[ESPACIO NECESARIO] ", size_bytes, " Bytes")
+					salida_consola += "\\n" +"[ESPACIO DISPONIBLE] " + strconv.Itoa(espacio_disponible) + " Bytes"
+					salida_consola += "\\n" +"[ESPACIO NECESARIO] " + strconv.Itoa(size_bytes) + " Bytes"
 
 					// Verifico que haya espacio suficiente
 					if espacio_disponible >= size_bytes {
@@ -1697,7 +1702,7 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 									f.Write([]byte{1})
 								}
 
-								fmt.Println("[SUCCES] La Particion extendida fue creada con exito!")
+								salida_consola += "\\n" +"[SUCCES] La Particion extendida fue creada con exito!"
 							} else if s_dsk_fit == "b" {
 								/*  Mejor Ajuste  */
 								best_index := num_particion
@@ -1823,7 +1828,7 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 									f.Write([]byte{1})
 								}
 
-								fmt.Println("[SUCCES] La Particion extendida fue creada con exito!")
+								salida_consola += "\\n" +"[SUCCES] La Particion extendida fue creada con exito!"
 							} else {
 								/*  Peor ajuste  */
 								worst_index := num_particion
@@ -1949,23 +1954,23 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 									f.Write([]byte{1})
 								}
 
-								fmt.Println("[SUCCES] La Particion extendida fue creada con exito!")
+								salida_consola += "\\n" +"[SUCCES] La Particion extendida fue creada con exito!"
 							}
 						} else {
-							fmt.Println("[ERROR] Ya existe una particion creada con ese nombre")
+							salida_consola += "\\n" +"[ERROR] Ya existe una particion creada con ese nombre"
 						}
 					} else {
-						fmt.Println("[ERROR] La particion que desea crear excede el espacio disponible")
+						salida_consola += "\\n" +"[ERROR] La particion que desea crear excede el espacio disponible"
 					}
 				} else {
-					fmt.Println("[ERROR] La suma de particiones primarias y extendidas no debe exceder de 4 particiones")
-					fmt.Println("[MENSAJE] Se recomienda eliminar alguna particion para poder crear otra particion primaria o extendida")
+					salida_consola += "\\n" +"[ERROR] La suma de particiones primarias y extendidas no debe exceder de 4 particiones"
+					salida_consola += "\\n" +"[MENSAJE] Se recomienda eliminar alguna particion para poder crear otra particion primaria o extendida"
 				}
 			} else {
-				fmt.Println("[ERROR] Solo puede haber una particion extendida por disco")
+				salida_consola += "\\n" +"[ERROR] Solo puede haber una particion extendida por disco"
 			}
 		} else {
-			fmt.Println("[ERROR] el disco se encuentra vacio")
+			salida_consola += "\\n" +"[ERROR] el disco se encuentra vacio"
 		}
 		f.Close()
 	}
@@ -2013,7 +2018,7 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 
 	// ERROR
 	if err != nil {
-		fmt.Println("[ERROR] No existe el disco duro con ese nombre")
+		salida_consola += "\\n" +"[ERROR] No existe el disco duro con ese nombre"
 	} else {
 		// Calculo del tamaño de struct en bytes
 		mbr2 := struct_a_bytes(mbr_empty)
@@ -2076,12 +2081,12 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 						s_part_size = strings.Trim(s_part_size, "\x00")
 						i_part_size, _ := strconv.Atoi(s_part_size)
 
-						fmt.Println("[ESPACIO DISPONIBLE] ", i_part_size, " Bytes")
-						fmt.Println("[ESPACIO NECESARIO] ", size_bytes, " Bytes")
+						salida_consola += "\\n" +"[ESPACIO DISPONIBLE] "+ strconv.Itoa(i_part_size) + " Bytes"
+						salida_consola += "\\n" +"[ESPACIO NECESARIO] "+ strconv.Itoa(size_bytes) + " Bytes"
 
 						// Si excede el tamaño de la extendida
 						if i_part_size < size_bytes {
-							fmt.Println("[ERROR] La particion logica a crear excede el espacio disponible de la particion extendida")
+							salida_consola += "\\n" +"[ERROR] La particion logica a crear excede el espacio disponible de la particion extendida"
 						} else {
 							copy(extended_boot_record.Part_mount[:], "0")
 							copy(extended_boot_record.Part_fit[:], aux_fit)
@@ -2105,7 +2110,7 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 							f.Seek(int64(i_part_start), io.SeekStart)
 							f.Write(ebr_byte)
 
-							fmt.Println("[SUCCES] La Particion logica fue creada con exito")
+							salida_consola += "\\n" +"[SUCCES] La Particion logica fue creada con exito"
 						}
 					} else {
 						// Obtencion de datos
@@ -2118,8 +2123,8 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 						s_part_start = strings.Trim(s_part_start, "\x00")
 						i_part_start, _ := strconv.Atoi(s_part_start)
 
-						fmt.Println("[ESPACIO DISPONIBLE] ", i_part_size+i_part_start, " Bytes")
-						fmt.Println("[ESPACIO NECESARIO] ", size_bytes, " Bytes")
+						salida_consola += "\\n" +"[ESPACIO DISPONIBLE] "+ strconv.Itoa(i_part_size+i_part_start) + " Bytes"
+						salida_consola += "\\n" +"[ESPACIO NECESARIO] "+ strconv.Itoa(size_bytes) + " Bytes"
 
 						// Obtencion de datos
 						s_part_next := string(extended_boot_record.Part_next[:])
@@ -2201,19 +2206,19 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 							ebr_byte = struct_a_bytes(extended_boot_record)
 							f.Write(ebr_byte)
 
-							fmt.Println("[SUCCES] La Particion logica fue creada con exito")
+							salida_consola += "\\n" +"[SUCCES] La Particion logica fue creada con exito"
 						} else {
-							fmt.Println("[ERROR] La particion logica a crear excede el espacio disponible de la particion extendida")
+							salida_consola += "\\n" +"[ERROR] La particion logica a crear excede el espacio disponible de la particion extendida"
 						}
 					}
 				} else {
-					fmt.Println("[ERROR] No se puede crear una particion logica si no hay una extendida")
+					salida_consola += "\\n" +"[ERROR] No se puede crear una particion logica si no hay una extendida"
 				}
 			} else {
-				fmt.Println("[ERROR] Ya existe una particion con ese nombre")
+				salida_consola += "\\n" +"[ERROR] Ya existe una particion con ese nombre"
 			}
 		} else {
-			fmt.Println("[ERROR] el disco se encuentra vacio")
+			salida_consola += "\\n" +"[ERROR] el disco se encuentra vacio"
 		}
 		f.Close()
 	}
@@ -2340,7 +2345,7 @@ func existe_particion(direccion string, nombre string) bool {
 				}
 			}
 		} else {
-			fmt.Println("[ERROR] el disco se encuentra vacio")
+			salida_consola += "\\n" +"[ERROR] el disco se encuentra vacio"
 		}
 	}
 
@@ -2379,7 +2384,7 @@ func buscar_particion_p_e(direccion string, nombre string) int {
 			s_part_status = string(master_boot_record.Mbr_partition[i].Part_status[:])
 			s_part_status = strings.Trim(s_part_status, "\x00")
 
-			//fmt.Println("FOR s_part_status: ", s_part_status)
+			//salida_consola += "\\n" +"FOR s_part_status: ", s_part_status
 
 			if s_part_status != "1" {
 				// Antes de comparar limpio la cadena
@@ -2387,7 +2392,7 @@ func buscar_particion_p_e(direccion string, nombre string) int {
 				s_part_name = strings.Trim(s_part_name, "\x00")
 
 				if s_part_name == nombre {
-					//fmt.Println("s_part_name: ", s_part_name, "su estado es: ", s_part_status)
+					//salida_consola += "\\n" +"s_part_name: ", s_part_name, "su estado es: ", s_part_status
 					return i
 				}
 			} else if s_part_status == "1"{
@@ -2397,7 +2402,7 @@ func buscar_particion_p_e(direccion string, nombre string) int {
 
 				if s_part_name == nombre {
 					//si el estado es 1 y el nombre es igual al que se busca, entonces la particion ya fue montada
-					//fmt.Println("s_part_name: ", s_part_name, "su estado es: ", s_part_status)
+					//salida_consola += "\\n" +"s_part_name: ", s_part_name, "su estado es: ", s_part_status
 					
 					return 3
 				}
@@ -2500,7 +2505,7 @@ func struct_a_bytes(p interface{}) []byte {
 
 	// ERROR
 	if err != nil && err != io.EOF {
-		fmt.Println("[ERROR_struct_a_bytes] ", err)
+		salida_consola += "\\n" +"[ERROR_struct_a_bytes] al codificar"
 	}
 
 	return buf.Bytes()
@@ -2514,7 +2519,7 @@ func bytes_a_struct_mbr(s []byte) MBR {
 
 	// ERROR
 	if err != nil && err != io.EOF {
-		fmt.Println("[ERROR_bytes_a_struct_mbr] ", err)
+		salida_consola += "\\n" +"[ERROR_bytes_a_struct_mbr] AL decodificar"
 	}
 
 	return p
@@ -2528,7 +2533,7 @@ func bytes_a_struct_ebr(s []byte) EBR {
 
 	// ERROR
 	if err != nil && err != io.EOF {
-		fmt.Println("[ERROR_bytes_a_struct_ebr] ", err)
+		salida_consola += "\\n" +"[ERROR_bytes_a_struct_ebr] al decodificar"
 	}
 
 	return p
@@ -2554,8 +2559,13 @@ func graficar_disk(direccion string, destino string) {
 	// Conversion de bytes a struct
 	master_boot_record := bytes_a_struct_mbr(lectura)
 
+	//Obtener unicamente el nombre del archivo
+	nombre := filepath.Base(direccion)
+
+
+
 	// Variables poara las graficas
-	label := "Reporte Disk"
+	label := "Reporte " + nombre
 	label_loc := "t"
 
 	if master_boot_record.Mbr_tamano != empty {
@@ -2603,10 +2613,14 @@ func graficar_disk(direccion string, destino string) {
 
 					// Obtengo el espacio utilizado
 					s_part_status := string(master_boot_record.Mbr_partition[i].Part_status[:])
+
+					fmt.Println("graph s_part_status: ", s_part_status)
+
 					// Le quito los caracteres null
 					s_part_status = strings.Trim(s_part_status, "\x00")
-
-					if s_part_status != "1" {
+					
+					// Revisar si la particion esta montada
+					if s_part_status != "0" {
 						// Obtengo el espacio utilizado
 						s_part_type := string(master_boot_record.Mbr_partition[i].Part_type[:])
 						// Le quito los caracteres null
@@ -2895,22 +2909,22 @@ func graficar_disk(direccion string, destino string) {
 
 			// Escribe el contenido en un archivo
 			err := ioutil.WriteFile("reporte.dot", []byte(graphDot), 0644)
-			fmt.Println("[MENSAJE] Generando reporte...")
+			//salida_consola += "\\n" +"[MENSAJE] Generando reporte"
 			if err != nil {
-				fmt.Println("[ERROR] Error al escribir en el archivo:", err)
+				salida_consola += "\\n" +"[ERROR] Error al escribir en el archivo"
 				return
 			}
 
 			// Ejecutar el comando para generar la imagen
 			cmd := exec.Command("dot", "-Tpng", "reporte.dot", "-o", destino)
 			if err := cmd.Run(); err != nil {
-				fmt.Println("[ERROR] Error al generar la imagen:", err)
+				salida_consola += "\\n" +"[ERROR] Error al generar la imagen"
 				return
 			}
 		} else {
-			fmt.Println("[ERROR] El disco no fue encontrado")
+			salida_consola += "\\n" +"[ERROR] El disco no fue encontrado"
 		}
 	} else {
-		fmt.Println("[ERROR] Disco vacio")
+		salida_consola += "\\n" +"[ERROR] Disco vacio"
 	}
 }

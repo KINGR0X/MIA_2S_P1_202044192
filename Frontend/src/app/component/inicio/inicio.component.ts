@@ -20,13 +20,19 @@ export class InicioComponent implements OnInit {
   }
 
   ejecutar() {
-    this.salida = "Enviando comandos al API";
+    this.salida = "Enviando comandos al API...";
     if (this.entrada != "") {
-      this.service.postEntrada(this.entrada).subscribe(async (res: any) => {
-        this.salida = res.result;
-      });
+      this.service.postEntrada(this.entrada).subscribe(
+        async (res: any) => {
+          this.salida = res.result;
+        },
+        (error) => {
+          console.error("Error al enviar comandos al API:", error);
+          this.salida = "Error al enviar comandos al API.";
+        }
+      );
     } else {
-      alert("El archivo de entrada esta vacio");
+      alert("El archivo de entrada está vacío");
       this.salida = "";
     }
   }

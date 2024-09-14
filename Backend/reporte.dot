@@ -1,6 +1,6 @@
 digraph G{
 
-label= "Reporte Disk"
+label= "Reporte disk2.mia"
 labelloc="t"
 fontsize=25  tbl [
     shape=box
@@ -8,10 +8,10 @@ fontsize=25  tbl [
      <table border='0' cellborder='2' width='600' height='150' color='dodgerblue1'>
      <tr>
      <td height='150' width='110'> MBR </td>
-     <td height='200' width='83.3'>Libre<br/> 16.7 % del Disco </td>
-     <td height='200' width='83.3'>Libre<br/> 16.7 % del Disco </td>
-     <td height='200' width='167'>Libre<br/> 33.3 % del Disco </td>
-     <td height='200' width='83.3'>Libre<br/> 16.7 % del Disco </td>
+     <td height='200' width='71.4'>Primaria <br/> 14.3 % del Disco </td>
+     <td height='200' width='71.4'>Primaria <br/> 14.3 % del Disco </td>
+     <td height='200' width='143'>Primaria <br/> 28.6 % del Disco </td>
+     <td height='200' width='71.4'>Libre<br/> 14.3 % del Disco </td>
      </tr> 
      </table>        
 >];
