@@ -2,7 +2,7 @@ digraph grid {
     bgcolor="#0c0d0c" 
     layout=dot 
     labelloc = "t"
-    edge [weigth=1000 style=dashed dir="both" arrowtail="open" arrowhead="open" color="white"]
+    edge [weight=1000 style=dashed dir="both" arrowtail="open" arrowhead="open" color="white"]
     
     a0 [shape=none, color=black, fontcolor="white" label=<
         <TABLE cellspacing="3" cellpadding="2" border='0' cellborder='1' color='#7077A1'>

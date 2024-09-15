@@ -990,6 +990,10 @@ func rep(commandArray []string) {
 						// Reportes validos
 						if val_name == "disk" {
 							graficar_disk(aux.Direccion, val_path)
+
+						} else if (val_name== "mbr") {
+							graficar_mbr(aux.Direccion, val_path)
+
 						}
 					} else {
 						salida_consola += "\\n" +"[ERROR] No encuentra la particion..."
@@ -2562,7 +2566,7 @@ func graficar_disk(direccion string, destino string) {
 	//Obtener unicamente el nombre del archivo
 	nombre := filepath.Base(direccion)
 
-	// Variables poara las graficas
+	// Variables para las graficas
 	label := "Reporte " + nombre
 	label_loc := "t"
 
@@ -2943,6 +2947,256 @@ func graficar_disk(direccion string, destino string) {
 				salida_consola += "\\n" +"[ERROR] Error al generar la imagen"
 				return
 			}
+		} else {
+			salida_consola += "\\n" +"[ERROR] El disco no fue encontrado"
+		}
+	} else {
+		salida_consola += "\\n" +"[ERROR] Disco vacio"
+	}
+}
+
+
+func graficar_mbr(direccion string, destino string){
+	mbr_empty := MBR{}
+	var empty [100]byte
+
+	// Abro el archivo para lectura con opcion a modificar
+	f, err := os.OpenFile(direccion, os.O_RDWR, 0660)
+
+	// Calculo del tamaño de struct en bytes
+	mbr2 := struct_a_bytes(mbr_empty)
+	sstruct := len(mbr2)
+
+	// Lectrura del archivo binario desde el inicio
+	lectura := make([]byte, sstruct)
+	f.Seek(0, io.SeekStart)
+	f.Read(lectura)
+
+	// Conversion de bytes a struct
+	master_boot_record := bytes_a_struct_mbr(lectura)
+
+	//Obtener unicamente el nombre del archivo
+	//nombre := filepath.Base(direccion)
+
+	// Variables para las graficas
+	//label := "Reporte " + nombre
+	//label_loc := "t"
+
+	if master_boot_record.Mbr_tamano != empty {
+		if err == nil {
+			
+			// Obtengo el espacio utilizado
+			s_mbr_tamano := string(master_boot_record.Mbr_tamano[:])
+			// Le quito los caracteres null
+			s_mbr_tamano = strings.Trim(s_mbr_tamano, "\x00")
+
+			//Obtener fecha de creacion
+			s_fecha := string(master_boot_record.Mbr_fecha_creacion[:])
+			// Le quito los caracteres null
+			s_fecha = strings.Trim(s_fecha, "\x00")
+
+			//Obtener el disco signature
+			s_dsk_signature := string(master_boot_record.Mbr_dsk_signature[:])
+			// Le quito los caracteres null
+			s_dsk_signature = strings.Trim(s_dsk_signature, "\x00")
+
+			//Obtener el fit
+			s_dsk_fit := string(master_boot_record.Dsk_fit[:])
+			// Le quito los caracteres null
+			s_dsk_fit = strings.Trim(s_dsk_fit, "\x00")
+
+
+			graphDot  := "digraph grid {bgcolor=\"#0c0d0c\" label=\" Reporte MBR \" layout=dot "
+			graphDot  += "labelloc = \"t\" edge [weight=1000 style=dashed dir = \"both\" arrowtail=\"open\" arrowhead=\"open\" color=\"white\" ]"
+			graphDot  += "a1[shape=none, color=black, fontcolor=\"white\"label=< \n <TABLE cellspacing=\"3\" cellpadding=\"2\" style=\"rounded\" color=\"#7077A1\" > \n"
+			graphDot  += "<TR><TD bgcolor=\"#2e2f2e\" colspan=\"2\">MBR</TD></TR>\n"
+			graphDot  += "<TR><TD bgcolor=\"#2e2f2e\">mbr_tamano</TD><TD>" + string(s_mbr_tamano) + "</TD></TR>\n"
+			graphDot  += "<TR><TD bgcolor=\"#2e2f2e\">mbr_fecha_creacion</TD><TD>" + string(s_fecha) + "</TD></TR>\n"
+			graphDot  += "<TR><TD bgcolor=\"#2e2f2e\">mbr_disk_signature</TD><TD>" + string(s_dsk_signature)+ "</TD></TR>\n"
+			graphDot  += "<TR><TD bgcolor=\"#2e2f2e\">dsk_fit</TD><TD>" + string(s_dsk_fit) + "</TD></TR>\n"
+			
+			// Recorro las 4 particiones
+			for i := 0; i < 4; i++ {
+
+				// verifica si la particion existe
+				s_part_start := string(master_boot_record.Mbr_partition[i].Part_start[:])
+				// Le quito los caracteres null
+				s_part_start = strings.Trim(s_part_start, "\x00")
+
+
+				// verifica si la particion existe
+				if s_part_start != "-1" {
+					// Obtengo el espacio utilizado
+					s_part_type := string(master_boot_record.Mbr_partition[i].Part_type[:])
+					// Le quito los caracteres null
+					s_part_type = strings.Trim(s_part_type, "\x00")
+
+					// Verificar si es extendida o primaria
+					if s_part_type == "e" {
+						//fmt.Println("Entre a partcion extendida")
+						//Obtener el status
+						s_part_status := string(master_boot_record.Mbr_partition[i].Part_status[:])
+						// Le quito los caracteres null
+						s_part_status = strings.Trim(s_part_status, "\x00")
+
+						// part fit
+						s_part_fit := string(master_boot_record.Mbr_partition[i].Part_fit[:])
+						// Le quito los caracteres null
+						s_part_fit = strings.Trim(s_part_fit, "\x00")
+						
+						// part start
+						s_part_start := string(master_boot_record.Mbr_partition[i].Part_start[:])
+						// Le quito los caracteres null
+						s_part_start = strings.Trim(s_part_start, "\x00")
+
+						// part size
+						s_part_s := string(master_boot_record.Mbr_partition[i].Part_size[:])
+						// Le quito los caracteres null
+						s_part_s = strings.Trim(s_part_s, "\x00")
+
+						//nombre de la particion actual
+						s_part_name := string(master_boot_record.Mbr_partition[i].Part_name[:])
+						// Le quito los caracteres null
+						s_part_name = strings.Trim(s_part_name, "\x00")
+
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\" colspan=\"2\">Particion</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_status</TD><TD>" + string(s_part_status) + "</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_type</TD><TD>p</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_fit</TD><TD>" + string(s_part_fit) + "</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_start</TD><TD>" + string(s_part_start) + "</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_s</TD><TD>" + string(s_part_s) + "</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_name</TD><TD>" + string(s_part_name) + "</TD></TR>\n"
+
+
+						// Obtengo el espacio utilizado
+						mbr_part_start := string(master_boot_record.Mbr_partition[i].Part_start[:])
+						// Le quito los caracteres null
+						mbr_part_start = strings.Trim(mbr_part_start, "\x00")
+						i_part_start, _ := strconv.Atoi(mbr_part_start)
+
+						f.Seek(int64(i_part_start), io.SeekStart)
+						
+						ebr_empty := EBR{}
+
+						// Calculo del tamaño de struct en bytes
+						ebr2 := struct_a_bytes(ebr_empty)
+						sstruct := len(ebr2)
+
+						// Lectrura del archivo binario desde el inicio
+						lectura := make([]byte, sstruct)
+						f.Read(lectura)
+
+						// Conversion de bytes a struct
+						extended_boot_record := bytes_a_struct_ebr(lectura)
+
+						// Obtengo el espacio utilizado
+						s_part_size := string(extended_boot_record.Part_size[:])
+						// Le quito los caracteres null
+						s_part_size = strings.Trim(s_part_size, "\x00")
+						i_part_size, _ := strconv.Atoi(s_part_size)
+
+						for i_part_size != 0 {
+							// Obtengo el valor del mount
+							s_part_mount := string(extended_boot_record.Part_mount[:])
+							// Le quito los caracteres null
+							s_part_mount = strings.Trim(s_part_mount, "\x00")
+							
+							// Obtengo el valor del fit
+							s_part_fit := string(extended_boot_record.Part_fit[:])
+							// Le quito los caracteres null
+							s_part_fit = strings.Trim(s_part_fit, "\x00")
+
+							// Obtengo el valor del start
+							s_part_start := string(extended_boot_record.Part_start[:])
+							// Le quito los caracteres null
+							s_part_start = strings.Trim(s_part_start, "\x00")
+
+							// Obtengo el valor del size
+							s_part_s := string(extended_boot_record.Part_size[:])
+							// Le quito los caracteres null
+							s_part_s = strings.Trim(s_part_s, "\x00")
+
+							// Obtengo el valor del next
+							s_part_next := string(extended_boot_record.Part_next[:])
+							// Le quito los caracteres null
+							s_part_next = strings.Trim(s_part_next, "\x00")
+
+							//nombre de la particion actual
+							s_part_name := string(extended_boot_record.Part_name[:])
+							// Le quito los caracteres null
+							s_part_name = strings.Trim(s_part_name, "\x00")
+
+		
+							graphDot += "<TR><TD bgcolor=\"#2e2f2e\" colspan=\"2\">Particion Logica</TD></TR>\n"
+							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_mount</TD><TD>" + string(s_part_mount) + "</TD></TR>\n"
+
+							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_fit</TD><TD>" + string(s_part_fit) + "</TD></TR>\n"
+							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_start</TD><TD>" + string(s_part_start) + "</TD></TR>\n"
+							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_s</TD><TD>" + string(s_part_s) + "</TD></TR>\n"
+							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_next</TD><TD>" + string(s_part_next) + "</TD></TR>\n"
+							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_name</TD><TD>" + string(s_part_name) + "</TD></TR>\n"
+						}
+
+					} else {
+
+						//fmt.Println("Entre en la Particion: ", i)
+						// si es primaria
+						//Obtener el status
+						s_part_status := string(master_boot_record.Mbr_partition[i].Part_status[:])
+						// Le quito los caracteres null
+						s_part_status = strings.Trim(s_part_status, "\x00")
+
+						// part fit
+						s_part_fit := string(master_boot_record.Mbr_partition[i].Part_fit[:])
+						// Le quito los caracteres null
+						s_part_fit = strings.Trim(s_part_fit, "\x00")
+						
+						// part start
+						s_part_start := string(master_boot_record.Mbr_partition[i].Part_start[:])
+						// Le quito los caracteres null
+						s_part_start = strings.Trim(s_part_start, "\x00")
+
+						// part size
+						s_part_s := string(master_boot_record.Mbr_partition[i].Part_size[:])
+						// Le quito los caracteres null
+						s_part_s = strings.Trim(s_part_s, "\x00")
+
+						//nombre de la particion actual
+						s_part_name := string(master_boot_record.Mbr_partition[i].Part_name[:])
+						// Le quito los caracteres null
+						s_part_name = strings.Trim(s_part_name, "\x00")
+
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\" colspan=\"2\">Particion</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_status</TD><TD>" + string(s_part_status) + "</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_type</TD><TD>p</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_fit</TD><TD>" + string(s_part_fit) + "</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_start</TD><TD>" + string(s_part_start) + "</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_s</TD><TD>" + string(s_part_s) + "</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_name</TD><TD>" + string(s_part_name) + "</TD></TR>\n"
+					}
+
+
+				}
+			}
+
+
+			graphDot += "</TABLE>>];\n}"
+
+			// Escribe el contenido en un archivo
+			err := ioutil.WriteFile("reporte.dot", []byte(graphDot), 0644)
+			//salida_consola += "\\n" +"[MENSAJE] Generando reporte"
+			if err != nil {
+				salida_consola += "\\n" +"[ERROR] Error al escribir en el archivo"
+				return
+			}
+
+			// Ejecutar el comando para generar la imagen
+			cmd := exec.Command("dot", "-Tpng", "reporte.dot", "-o", destino)
+			if err := cmd.Run(); err != nil {
+				salida_consola += "\\n" +"[ERROR] Error al generar la imagen"
+				return
+			}
+
 		} else {
 			salida_consola += "\\n" +"[ERROR] El disco no fue encontrado"
 		}
