@@ -1,30 +1,20 @@
-digraph grid {bgcolor="#0c0d0c" label=" Reporte MBR " layout=dot labelloc = "t" edge [weight=1000 style=dashed dir = "both" arrowtail="open" arrowhead="open" color="white" ]a1[shape=none, color=black, fontcolor="white"label=< 
- <TABLE cellspacing="3" cellpadding="2" style="rounded" color="#7077A1" > 
-<TR><TD bgcolor="#2e2f2e" colspan="2">MBR</TD></TR>
-<TR><TD bgcolor="#2e2f2e">mbr_tamano</TD><TD>7340032</TD></TR>
-<TR><TD bgcolor="#2e2f2e">mbr_fecha_creacion</TD><TD>15/09/2024 00:13:42</TD></TR>
-<TR><TD bgcolor="#2e2f2e">mbr_disk_signature</TD><TD>24</TD></TR>
-<TR><TD bgcolor="#2e2f2e">dsk_fit</TD><TD>ff</TD></TR>
-<TR><TD bgcolor="#2e2f2e" colspan="2">Particion</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_status</TD><TD>1</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_type</TD><TD>p</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_fit</TD><TD>w</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_start</TD><TD>4006</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_s</TD><TD>1048576</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_name</TD><TD>Particion1</TD></TR>
-<TR><TD bgcolor="#2e2f2e" colspan="2">Particion</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_status</TD><TD>1</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_type</TD><TD>p</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_fit</TD><TD>w</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_start</TD><TD>1052582</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_s</TD><TD>1048576</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_name</TD><TD>Particion2</TD></TR>
-<TR><TD bgcolor="#2e2f2e" colspan="2">Particion</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_status</TD><TD>0</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_type</TD><TD>p</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_fit</TD><TD>w</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_start</TD><TD>2101158</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_s</TD><TD>2097152</TD></TR>
-<TR><TD bgcolor="#2e2f2e">part_name</TD><TD>Particion3</TD></TR>
-</TABLE>>];
+digraph G{
+
+label= "Reporte disk2.mia"
+labelloc="t"
+fontsize=25  tbl [
+    shape=box
+    label=<
+     <table border='0' cellborder='2' width='600' height='150' color='dodgerblue1'>
+     <tr>
+     <td height='150' width='110'> MBR </td>
+     <td height='200' width='71.4'>Primaria <br/> 14.3 % del Disco </td>
+     <td height='200' width='71.4'>Primaria <br/> 14.3 % del Disco </td>
+     <td height='200' width='143'>Primaria <br/> 28.6 % del Disco </td>
+     <td height='200' width='71.4'>Primaria <br/> 14.3 % del Disco </td>
+     <td height='200' width='143'>Libre<br/> 28.6 % del Disco </td>
+     </tr> 
+     </table>        
+>];
+
 }

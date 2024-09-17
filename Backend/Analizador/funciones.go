@@ -261,6 +261,9 @@ func mkdisk(commandArray []string) {
 			// Se activa la bandera size
 			band_size = true
 
+			//Le quito los espacios en blanco
+			val_data = strings.TrimSpace(val_data)
+
 			// Conversion a entero
 			aux_size, err := strconv.Atoi(val_data)
 			val_size = aux_size
@@ -286,9 +289,10 @@ func mkdisk(commandArray []string) {
 				salida_consola += "\\n" +"[ERROR] El parametro -fit ya fue ingresado"
 				band_error = true
 				break
-			}
+			}	
 
-			val_fit = strings.ToLower(val_data)
+			// Le quito los espacios en blanco y lo paso a minusculas
+			val_fit = strings.TrimSpace(strings.ToLower(val_data))
 
 			//salida_consola += "\\n" +"FIT: "+ val_fit
 
@@ -320,7 +324,8 @@ func mkdisk(commandArray []string) {
 				break
 			}		
 
-			val_unit = strings.ToLower(val_data)
+
+			val_unit = strings.TrimSpace(strings.ToLower(val_data))
 
 			//salida_consola += "\\n" +"UNIT: "+ val_unit
 
@@ -344,6 +349,8 @@ func mkdisk(commandArray []string) {
 			// Activo la bandera del parametro
 			band_path = true
 
+			//Quitar esapcios en blanco
+			val_data = strings.TrimSpace(val_data)
 			// Reemplaza comillas en caso de que vengan
 			val_path = strings.Replace(val_data, "\"", "", 2)
 			
@@ -483,7 +490,8 @@ func rmdisk(commandArray []string) {
 
 			// Activo la bandera del parametro
 			band_path = true
-
+			// Quitar espacios en blanco
+			val_data = strings.TrimSpace(val_data)
 			// Reemplaza comillas
 			val_path = strings.Replace(val_data, "\"", "", 2)
 		/* PARAMETRO NO VALIDO */
@@ -584,6 +592,9 @@ func fdisk(commandArray []string) {
 			// Activo la bandera del parametro
 			band_size = true
 
+			// Quitar espacios en blanco
+			val_data = strings.TrimSpace(val_data)
+
 			// Conversion a entero
 			aux_size, err := strconv.Atoi(val_data)
 			val_size = aux_size
@@ -611,7 +622,7 @@ func fdisk(commandArray []string) {
 			}
 
 			// Convertir a minuscula
-			val_unit = strings.ToLower(val_data)
+			val_unit = strings.TrimSpace(strings.ToLower(val_data))
 
 			if val_unit == "b" || val_unit == "k" || val_unit == "m" {
 				// Activo la bandera del parametro
@@ -632,7 +643,8 @@ func fdisk(commandArray []string) {
 
 			// Activo la bandera del parametro
 			band_path = true
-
+			// Quitar espacios en blanco
+			val_data = strings.TrimSpace(val_data)
 			// Reemplaza comillas
 			val_path = strings.Replace(val_data, "\"", "", 2)
 
@@ -646,7 +658,7 @@ func fdisk(commandArray []string) {
 
 			// Reemplaza comillas y lo paso a minusculas
 			val_type = strings.Replace(val_data, "\"", "", 2)
-			val_type = strings.ToLower(val_type)
+			val_type = strings.TrimSpace(strings.ToLower(val_type))
 
 			if val_type == "p" || val_type == "e" || val_type == "l" {
 				// Activo la bandera del parametro
@@ -668,7 +680,7 @@ func fdisk(commandArray []string) {
 
 			// Le quito las comillas y lo paso a minusculas
 			val_fit = strings.Replace(val_data, "\"", "", 2)
-			val_fit = strings.ToLower(val_fit)
+			val_fit = strings.TrimSpace(strings.ToLower(val_fit))
 
 			if val_fit == "bf" {
 				// Activo la bandera del parametro y obtengo el caracter que me interesa
@@ -720,9 +732,12 @@ func fdisk(commandArray []string) {
 						} else if val_type == "e" {
 							// Extendida
 							crear_particion_extendia(val_path, val_name, val_size, val_fit, val_unit)
+
 						} else {
 							// Logica
+							//fmt.Println("voy a crear una Particion Logica")
 							crear_particion_logica(val_path, val_name, val_size, val_fit, val_unit)
+							
 						}
 					} else {
 						// Si no lo indica se tomara como Primaria
@@ -774,7 +789,7 @@ func mount(commandArray []string) {
 			band_path = true
 
 			// Reemplaza comillas
-			val_path = strings.Replace(val_data, "\"", "", 2)
+			val_path = strings.TrimSpace(strings.Replace(val_data, "\"", "", 2))
 
 		/* PARAMETRO OBLIGATORIO -NAME */
 		case strings.Contains(data, "name="):
@@ -802,7 +817,7 @@ func mount(commandArray []string) {
 		if band_path {
 			if band_name {
 				// Buscar particion primaria
-				index_p := buscar_particion_p_e(val_path, val_name)
+				index_p := buscar_particion_p(val_path, val_name)
 
 				//Se pueden montar aun cuando su estado sea 1, esto por si se vuelve a iniciar el programa y se necesita cargar en RAM (lista)
 				// Si existe
@@ -949,6 +964,9 @@ func rep(commandArray []string) {
 			// Reemplaza comillas
 			val_path = strings.Replace(val_data, "\"", "", 2)
 
+			// quitar espacios en blanco
+			val_path = strings.TrimSpace(val_path)
+
 		/* PARAMETRO OBLIGATORIO -ID */
 		case strings.Contains(data, "id="):
 			// Valido si el parametro ya fue ingresado
@@ -963,6 +981,9 @@ func rep(commandArray []string) {
 
 			// Reemplaza comillas
 			val_id = val_data
+
+			// quitar espacios en blanco
+			val_id = strings.TrimSpace(val_id)
 
 		/* PARAMETRO OBLIGATORIO -RUTA */
 		case strings.Contains(data, "ruta="):
@@ -1691,8 +1712,8 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 								f.Seek(int64(i_part_start), io.SeekStart)
 
 								extended_boot_record := EBR{}
-								copy(extended_boot_record.Part_fit[:], aux_fit)
 								copy(extended_boot_record.Part_mount[:], "0")
+								copy(extended_boot_record.Part_fit[:], aux_fit)
 								copy(extended_boot_record.Part_start[:], s_part_start)
 								copy(extended_boot_record.Part_size[:], "0")
 								copy(extended_boot_record.Part_next[:], "-1")
@@ -1818,8 +1839,8 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 								f.Seek(int64(i_part_start_best), io.SeekStart)
 
 								extended_boot_record := EBR{}
-								copy(extended_boot_record.Part_fit[:], aux_fit)
 								copy(extended_boot_record.Part_mount[:], "0")
+								copy(extended_boot_record.Part_fit[:], aux_fit)
 								copy(extended_boot_record.Part_start[:], s_part_start_best)
 								copy(extended_boot_record.Part_size[:], "0")
 								copy(extended_boot_record.Part_next[:], "-1")
@@ -1944,8 +1965,8 @@ func crear_particion_extendia(direccion string, nombre string, size int, fit str
 								f.Seek(int64(i_part_start_worst), io.SeekStart)
 
 								extended_boot_record := EBR{}
-								copy(extended_boot_record.Part_fit[:], aux_fit)
 								copy(extended_boot_record.Part_mount[:], "0")
+								copy(extended_boot_record.Part_fit[:], aux_fit)
 								copy(extended_boot_record.Part_start[:], s_part_start_worst)
 								copy(extended_boot_record.Part_size[:], "0")
 								copy(extended_boot_record.Part_next[:], "-1")
@@ -2061,6 +2082,8 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 
 					cont := i_part_start
 
+
+
 					// Se posiciona en el inicio de la particion
 					f.Seek(int64(cont), io.SeekStart)
 
@@ -2072,6 +2095,7 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 					lectura := make([]byte, sstruct)
 					f.Read(lectura)
 
+					//fmt.Println("llegue hasta antes de crear la particion logica")
 					// Conversion de bytes a struct
 					extended_boot_record := bytes_a_struct_ebr(lectura)
 
@@ -2079,6 +2103,7 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 					s_part_size_ext := string(extended_boot_record.Part_size[:])
 					s_part_size_ext = strings.Trim(s_part_size_ext, "\x00")
 
+					// Si es la primera particion logica
 					if s_part_size_ext == "0" {
 						// Obtencion de datos
 						s_part_size := string(master_boot_record.Mbr_partition[num_extendida].Part_size[:])
@@ -2153,6 +2178,7 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 							pos_actual, _ = f.Seek(0, io.SeekCurrent)
 
 							// Conversion de bytes a struct
+							fmt.Println("No soy el primero")
 							extended_boot_record = bytes_a_struct_ebr(lectura)
 
 							if extended_boot_record.Part_next == empty {
@@ -2187,10 +2213,11 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 
 						espacio_necesario := i_part_start_ext + i_part_size_ext + size_bytes
 
+
 						if espacio_necesario <= (i_part_size_mbr + i_part_start_mbr) {
 							copy(extended_boot_record.Part_next[:], strconv.Itoa(i_part_start_ext+i_part_size_ext))
 
-							// Escribo el nedxto del ultimo ebr
+							// Escribo el nex to del ultimo ebr
 							pos_actual, _ = f.Seek(0, io.SeekCurrent)
 							ebr_byte := struct_a_bytes(extended_boot_record)
 							// Escribo el next del ultimo EBR
@@ -2294,6 +2321,8 @@ func existe_particion(direccion string, nombre string) bool {
 				s_part_size = strings.Trim(s_part_size, "\x00")
 				i_part_size, _ := strconv.Atoi(s_part_size)
 
+				// ==============================================================
+
 				// Calculo del tamaño de struct en bytes
 				ebr2 := struct_a_bytes(ebr_empty)
 				sstruct := len(ebr2)
@@ -2309,6 +2338,30 @@ func existe_particion(direccion string, nombre string) bool {
 				// Posicion actual en el archivo
 				pos_actual, _ := f.Seek(0, io.SeekCurrent)
 
+				f.Read(lectura)
+
+				// Conversion de bytes a struct
+				//fmt.Println("lelgue hasta existir particion")
+				extended_boot_record := bytes_a_struct_ebr(lectura)
+				//fmt.Println("Pase la conversion")
+
+				
+				//Obtengo el nombre de la particion
+				s_part_name = string(extended_boot_record.Part_name[:])
+				// Le quito los caracteres null
+				s_part_name = strings.Trim(s_part_name, "\x00")
+
+				//fmt.Println("part_name: ", string(s_part_name ))
+
+				//obtengo el tamaño de la particion
+				s_part_size = string(extended_boot_record.Part_size[:])
+				// Le quito los caracteres null
+				s_part_size = strings.Trim(s_part_size, "\x00")
+
+				//fmt.Println("part_size: ", string(s_part_size))
+				
+
+
 				// Lectrura de conjunto de bytes desde el inicio de la particion
 				for n_leidos != 0 && (pos_actual < int64(i_part_size+i_part_start)) {
 					// Lectrura de conjunto de bytes en archivo binario
@@ -2318,9 +2371,8 @@ func existe_particion(direccion string, nombre string) bool {
 
 					// Posicion actual en el archivo
 					pos_actual, _ = f.Seek(0, io.SeekCurrent)
+					
 
-					// Conversion de bytes a struct
-					extended_boot_record := bytes_a_struct_ebr(lectura)
 
 					if extended_boot_record.Part_size == empty {
 						break
@@ -2359,8 +2411,8 @@ func existe_particion(direccion string, nombre string) bool {
 
 
 
-// Busca particiones Primarias o Extendidas
-func buscar_particion_p_e(direccion string, nombre string) int {
+// Busca particiones Primarias
+func buscar_particion_p(direccion string, nombre string) int {
 	// Apertura del archivo
 	f, err := os.OpenFile(direccion, os.O_RDWR, 0660)
 
@@ -2390,7 +2442,11 @@ func buscar_particion_p_e(direccion string, nombre string) int {
 
 			//salida_consola += "\\n" +"FOR s_part_status: ", s_part_status
 
-			if s_part_status != "1" {
+			//Obtengo el typo, para que solo sean primarias
+			s_part_type := string(master_boot_record.Mbr_partition[i].Part_type[:])
+			s_part_type = strings.Trim(s_part_type, "\x00")
+
+			if s_part_status != "1" && s_part_type != "e" {
 				// Antes de comparar limpio la cadena
 				s_part_name = string(master_boot_record.Mbr_partition[i].Part_name[:])
 				s_part_name = strings.Trim(s_part_name, "\x00")
@@ -2538,6 +2594,8 @@ func bytes_a_struct_ebr(s []byte) EBR {
 	// ERROR
 	if err != nil && err != io.EOF {
 		salida_consola += "\\n" +"[ERROR_bytes_a_struct_ebr] al decodificar"
+		fmt.Println("[ERROR_bytes_a_struct_ebr] ", err)
+
 	}
 
 	return p
@@ -2588,8 +2646,13 @@ func graficar_disk(direccion string, destino string) {
 			i_mbr_tamano, _ := strconv.Atoi(s_mbr_tamano)
 			total := i_mbr_tamano
 
+			//Var para calcular el espacio usado de las particiones
 			var espacioUsado float64
 			espacioUsado = 0
+
+			//Var para calcular el espacio libre de la particion extendida
+			var espacio_usado_ext float64
+			espacio_usado_ext = 0
 
 			// Recorro las 4 particiones
 			for i := 0; i < 4; i++ {
@@ -2702,9 +2765,12 @@ func graficar_disk(direccion string, destino string) {
 								}
 							}
 						} else {
+							//fmt.Println("Voy a graficar una extendida")
 							// Si es extendida
 							graphDot += "     <td  height='200' width='" + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + "'>\n     <table border='0'  height='200' WIDTH='" + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + "' cellborder='1'>\n"
 							graphDot += "     <tr>  <td height='60' colspan='15'>Extendida</td>  </tr>\n     <tr>\n"
+
+							espacio_usado_ext = porcentaje_real
 
 							// Obtengo el espacio utilizado
 							s_part_start := string(master_boot_record.Mbr_partition[i].Part_start[:])
@@ -2733,8 +2799,13 @@ func graficar_disk(direccion string, destino string) {
 							s_part_size = strings.Trim(s_part_size, "\x00")
 							i_part_size, _ := strconv.Atoi(s_part_size)
 
+							//fmt.Println("Graf_disk i_part_size: ", i_part_size)
+
 							if i_part_size != 0 {
-								// Obtengo el espacio utilizado
+
+								//fmt.Println("Entre a i_part_size")
+								
+								// Obtengo donde inicia la partion
 								s_part_start := string(master_boot_record.Mbr_partition[i].Part_start[:])
 								// Le quito los caracteres null
 								s_part_start = strings.Trim(s_part_start, "\x00")
@@ -2744,66 +2815,85 @@ func graficar_disk(direccion string, destino string) {
 
 								band := true
 
-								// Obtengo el espacio utilizado
+								// Obtengo el tamaño de la particion
 								s_part_s = string(master_boot_record.Mbr_partition[i].Part_size[:])
 								// Le quito los caracteres null
 								s_part_s = strings.Trim(s_part_s, "\x00")
 								i_part_s, _ = strconv.Atoi(s_part_s)
 
-								// Obtengo el espacio utilizado
+								// Obtengo donde inicia la partion
 								s_part_start = string(master_boot_record.Mbr_partition[i].Part_start[:])
 								// Le quito los caracteres null
 								s_part_start = strings.Trim(s_part_start, "\x00")
 								i_part_start, _ = strconv.Atoi(s_part_start)
 
-								for band {
-									// Calculo del tamaño de struct en bytes
-									ebr2 := struct_a_bytes(ebr_empty)
-									sstruct := len(ebr2)
+								
+								for band{
 
-									// Lectrura del archivo binario desde el inicio
-									lectura := make([]byte, sstruct)
-									f.Seek(0, io.SeekStart)
-									n, _ := f.Read(lectura)
-
-									// Posicion actual en el archivo
-									pos_actual, _ := f.Seek(0, io.SeekCurrent)
-
-									if n != 0 && pos_actual < int64(i_part_start)+int64(i_part_s) {
-										band = false
-										break
-									}
+									// Obtener el espacio de la particion
+									s_part_size := string(extended_boot_record.Part_size[:])
+									// Le quito los caracteres null
+									s_part_size = strings.Trim(s_part_size, "\x00")
+									i_part_size, _ := strconv.Atoi(s_part_size)
 
 									// Obtengo el espacio utilizado
-									s_part_s = string(extended_boot_record.Part_size[:])
+									//s_part_start := string(extended_boot_record.Part_start[:])
 									// Le quito los caracteres null
-									s_part_s = strings.Trim(s_part_s, "\x00")
-									i_part_s, _ = strconv.Atoi(s_part_s)
+									//s_part_start = strings.Trim(s_part_start, "\x00")
+									//i_part_start, _ := strconv.Atoi(s_part_start)
+									// Posicion actual en el archivo
+									//pos_actual, _ := f.Seek(0, io.SeekCurrent)
 
-									parcial = i_part_start
+									
+									//fmt.Println("Posicion actual: ", pos_actual)
+									
+									//Obtengo el nom,bre de la particion
+									//s_part_name := string(extended_boot_record.Part_name[:])
+									// Le quito los caracteres null
+									//s_part_name = strings.Trim(s_part_name, "\x00")
+
+									//fmt.Println("Nombre de la particion: ", s_part_name)
+
+									parcial = i_part_size
 									porcentaje_real = float64(parcial) * 100 / float64(total)
 
+									//le resto el espacio de la particion
+									espacio_usado_ext = espacio_usado_ext - float64(porcentaje_real)
+
+
 									if porcentaje_real != 0 {
+
+										fmt.Println("Entre a porcentaje_real")
+
 										// Obtengo el espacio utilizado
 										s_part_status = string(extended_boot_record.Part_mount[:])
 										// Le quito los caracteres null
 										s_part_status = strings.Trim(s_part_status, "\x00")
 
+
 										if s_part_status != "1" {
+											fmt.Println("Entre a colocar el dot de logica")
+
 											graphDot += "     <td height='140'>EBR</td>\n"
 											graphDot += "     <td height='140'>Logica<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 										} else {
 											// Espacio no asignado
-											graphDot += "      <td height='150'>Libre 1 <br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
+											graphDot += "      <td height='150'>Libre <br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
 										}
 
-										// Obtengo el espacio utilizado
+										// Obtengo el next
 										s_part_next := string(extended_boot_record.Part_next[:])
 										// Le quito los caracteres null
 										s_part_next = strings.Trim(s_part_next, "\x00")
 										i_part_next, _ := strconv.Atoi(s_part_next)
 
-										if i_part_next == -1 {
+										//imprimo la siguiente logica
+										//fmt.Println("Siguiente logica: ", i_part_next)
+
+										//Si la siguiente logica es -1 entonces se termina (NO HAY MAS LOGICAS)
+										if i_part_next == -1 || i_part_next < 0 {
+
+											/*
 											// Obtengo el espacio utilizado
 											s_part_start := string(extended_boot_record.Part_start[:])
 											// Le quito los caracteres null
@@ -2816,11 +2906,13 @@ func graficar_disk(direccion string, destino string) {
 											s_part_size = strings.Trim(s_part_size, "\x00")
 											i_part_size, _ := strconv.Atoi(s_part_size)
 
-											// Obtengo el espacio utilizado
-											s_part_start_mbr := string(master_boot_record.Mbr_partition[i].Part_start[:])
+											fmt.Println("====== Part_size_EBR ", i_part_size)
+
+											s_part_start = string(master_boot_record.Mbr_partition[i].Part_start[:])
 											// Le quito los caracteres null
-											s_part_start_mbr = strings.Trim(s_part_start_mbr, "\x00")
-											i_part_start_mbr, _ := strconv.Atoi(s_part_start_mbr)
+											s_part_start = strings.Trim(s_part_start, "\x00")
+											i_part_start, _ = strconv.Atoi(s_part_start)
+
 
 											// Obtengo el espacio utilizado
 											s_part_s_mbr := string(master_boot_record.Mbr_partition[i].Part_size[:])
@@ -2828,11 +2920,12 @@ func graficar_disk(direccion string, destino string) {
 											s_part_s_mbr = strings.Trim(s_part_s_mbr, "\x00")
 											i_part_s_mbr, _ := strconv.Atoi(s_part_s_mbr)
 
-											parcial = (i_part_start_mbr + i_part_s_mbr) - (i_part_size + i_part_start)
-											porcentaje_real = (float64(parcial) * 100) / float64(total)
+											parcial = (i_part_start + i_part_s_mbr) - (i_part_size + i_part_start)
+											*/
+											
 
 											if porcentaje_real != 0 {
-												graphDot += "     <td height='150'>Libre 2<br/> " + strconv.FormatFloat(porcentaje_real, 'g', 3, 64) + " % del Disco </td>\n"
+												graphDot += "     <td height='150'>Libre<br/> " + strconv.FormatFloat(espacio_usado_ext, 'g', 3, 64) + " % del Disco </td>\n"
 											}
 											break
 
@@ -2843,7 +2936,28 @@ func graficar_disk(direccion string, destino string) {
 											s_part_next = strings.Trim(s_part_next, "\x00")
 											i_part_next, _ := strconv.Atoi(s_part_next)
 
-											f.Seek(int64(i_part_next), io.SeekStart)
+											// Se mueve el puntero a la siguiente particion logica
+											Newoffset, err := f.Seek(int64(i_part_next), 0)
+
+											if err != nil {
+												fmt.Println("Error al mover el puntero")
+											}
+
+											fmt.Println("Newoffset: ", Newoffset)
+
+											ebr_empty := EBR{}
+
+											// Calculo del tamaño de struct en bytes
+											ebr2 := struct_a_bytes(ebr_empty)
+											sstruct := len(ebr2)
+
+											// Lectrura del archivo binario desde el inicio
+											lectura := make([]byte, sstruct)
+											//f.Seek(0, io.SeekStart)
+											f.Read(lectura)
+											extended_boot_record = bytes_a_struct_ebr(lectura)
+
+											
 										}
 									}
 
@@ -3061,12 +3175,13 @@ func graficar_mbr(direccion string, destino string){
 
 						graphDot += "<TR><TD bgcolor=\"#2e2f2e\" colspan=\"2\">Particion</TD></TR>\n"
 						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_status</TD><TD>" + string(s_part_status) + "</TD></TR>\n"
-						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_type</TD><TD>p</TD></TR>\n"
+						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_type</TD><TD>e</TD></TR>\n"
 						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_fit</TD><TD>" + string(s_part_fit) + "</TD></TR>\n"
 						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_start</TD><TD>" + string(s_part_start) + "</TD></TR>\n"
 						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_s</TD><TD>" + string(s_part_s) + "</TD></TR>\n"
 						graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_name</TD><TD>" + string(s_part_name) + "</TD></TR>\n"
 
+						// === Empezar a leer el EBR ===
 
 						// Obtengo el espacio utilizado
 						mbr_part_start := string(master_boot_record.Mbr_partition[i].Part_start[:])
@@ -3074,7 +3189,11 @@ func graficar_mbr(direccion string, destino string){
 						mbr_part_start = strings.Trim(mbr_part_start, "\x00")
 						i_part_start, _ := strconv.Atoi(mbr_part_start)
 
+						
+
 						f.Seek(int64(i_part_start), io.SeekStart)
+
+
 						
 						ebr_empty := EBR{}
 
@@ -3091,11 +3210,21 @@ func graficar_mbr(direccion string, destino string){
 
 						// Obtengo el espacio utilizado
 						s_part_size := string(extended_boot_record.Part_size[:])
+
+						s_part_name= string(extended_boot_record.Part_name[:])
+
+						fmt.Println("Part_name_logica: ", s_part_name)
+						fmt.Println("Part_size_logica: ", s_part_size)
+						
+
 						// Le quito los caracteres null
 						s_part_size = strings.Trim(s_part_size, "\x00")
 						i_part_size, _ := strconv.Atoi(s_part_size)
 
-						for i_part_size != 0 {
+						// === Verifica si hay particiones logicas ===
+						//var despTemp = i_part_size
+
+						if i_part_size > 0 {
 							// Obtengo el valor del mount
 							s_part_mount := string(extended_boot_record.Part_mount[:])
 							// Le quito los caracteres null
@@ -3125,7 +3254,6 @@ func graficar_mbr(direccion string, destino string){
 							s_part_name := string(extended_boot_record.Part_name[:])
 							// Le quito los caracteres null
 							s_part_name = strings.Trim(s_part_name, "\x00")
-
 		
 							graphDot += "<TR><TD bgcolor=\"#2e2f2e\" colspan=\"2\">Particion Logica</TD></TR>\n"
 							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_mount</TD><TD>" + string(s_part_mount) + "</TD></TR>\n"
@@ -3135,6 +3263,33 @@ func graficar_mbr(direccion string, destino string){
 							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_s</TD><TD>" + string(s_part_s) + "</TD></TR>\n"
 							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_next</TD><TD>" + string(s_part_next) + "</TD></TR>\n"
 							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_name</TD><TD>" + string(s_part_name) + "</TD></TR>\n"
+
+							fmt.Println("Part_name_logica: ", s_part_name)
+							/*
+							// s_part_s a entero
+							var e_part_size, _ = strconv.Atoi(s_part_s)
+
+							despTemp += e_part_size + 1 + binary.Size(EBR{})
+							//fmt.Println("DespTemp: ", despTemp)
+
+							f.Seek(int64(despTemp), io.SeekStart)
+
+							ebr_empty := EBR{}
+
+							// Calculo del tamaño de struct en bytes
+							ebr2 := struct_a_bytes(ebr_empty)
+							sstruct := len(ebr2)
+
+							// Lectrura del archivo binario desde el inicio
+							lectura := make([]byte, sstruct)
+							f.Read(lectura)
+
+							// Conversion de bytes a struct
+							extended_boot_record = bytes_a_struct_ebr(lectura)	
+							*/
+							
+
+	
 						}
 
 					} else {
