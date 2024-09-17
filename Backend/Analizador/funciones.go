@@ -3034,12 +3034,14 @@ func graficar_disk(direccion string, destino string) {
 
 					// Obtener el restante de 100
 					s_restante := float64(100) - espacioUsado 
-
-					// 
 					var porcentaje_aux = (s_restante * 500) / 100
+					//
+					if s_restante > 0 { 
+						graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(s_restante, 'g', 3, 64) + " % del Disco </td>\n"
+
+					}
 					
 
-					graphDot += "     <td height='200' width='" + strconv.FormatFloat(porcentaje_aux, 'g', 3, 64) + "'>Libre<br/> " + strconv.FormatFloat(s_restante, 'g', 3, 64) + " % del Disco </td>\n"
 				}
 			}
 
@@ -3224,7 +3226,7 @@ func graficar_mbr(direccion string, destino string){
 						// === Verifica si hay particiones logicas ===
 						//var despTemp = i_part_size
 
-						if i_part_size > 0 {
+						for i_part_size > 0 {
 							// Obtengo el valor del mount
 							s_part_mount := string(extended_boot_record.Part_mount[:])
 							// Le quito los caracteres null
@@ -3265,30 +3267,40 @@ func graficar_mbr(direccion string, destino string){
 							graphDot += "<TR><TD bgcolor=\"#2e2f2e\">part_name</TD><TD>" + string(s_part_name) + "</TD></TR>\n"
 
 							fmt.Println("Part_name_logica: ", s_part_name)
-							/*
-							// s_part_s a entero
-							var e_part_size, _ = strconv.Atoi(s_part_s)
+							//convertir s_part_next a entero
+							var e_part_next, _ = strconv.Atoi(s_part_next)
+			
+							if e_part_next == -1 || e_part_next < 0{
+								break
+							} else{
+								// Obtengo el espacio utilizado
+								s_part_next := string(extended_boot_record.Part_next[:])
+								// Le quito los caracteres null
+								s_part_next = strings.Trim(s_part_next, "\x00")
+								i_part_next, _ := strconv.Atoi(s_part_next)
 
-							despTemp += e_part_size + 1 + binary.Size(EBR{})
-							//fmt.Println("DespTemp: ", despTemp)
+								// Se mueve el puntero a la siguiente particion logica
+								Newoffset, err := f.Seek(int64(i_part_next), 0)
 
-							f.Seek(int64(despTemp), io.SeekStart)
+								if err != nil {
+									fmt.Println("Error al mover el puntero")
+								}
 
-							ebr_empty := EBR{}
+								fmt.Println("Newoffset: ", Newoffset)
 
-							// Calculo del tamaño de struct en bytes
-							ebr2 := struct_a_bytes(ebr_empty)
-							sstruct := len(ebr2)
+								ebr_empty := EBR{}
 
-							// Lectrura del archivo binario desde el inicio
-							lectura := make([]byte, sstruct)
-							f.Read(lectura)
+								// Calculo del tamaño de struct en bytes
+								ebr2 := struct_a_bytes(ebr_empty)
+								sstruct := len(ebr2)
 
-							// Conversion de bytes a struct
-							extended_boot_record = bytes_a_struct_ebr(lectura)	
-							*/
-							
+								// Lectrura del archivo binario desde el inicio
+								lectura := make([]byte, sstruct)
+								//f.Seek(0, io.SeekStart)
+								f.Read(lectura)
+								extended_boot_record = bytes_a_struct_ebr(lectura)
 
+							}					
 	
 						}
 

@@ -1,6 +1,6 @@
 digraph G{
 
-label= "Reporte disk2.mia"
+label= "Reporte disk1.mia"
 labelloc="t"
 fontsize=25  tbl [
     shape=box
@@ -8,11 +8,20 @@ fontsize=25  tbl [
      <table border='0' cellborder='2' width='600' height='150' color='dodgerblue1'>
      <tr>
      <td height='150' width='110'> MBR </td>
-     <td height='200' width='71.4'>Primaria <br/> 14.3 % del Disco </td>
-     <td height='200' width='71.4'>Primaria <br/> 14.3 % del Disco </td>
-     <td height='200' width='143'>Primaria <br/> 28.6 % del Disco </td>
-     <td height='200' width='71.4'>Primaria <br/> 14.3 % del Disco </td>
-     <td height='200' width='143'>Libre<br/> 28.6 % del Disco </td>
+     <td height='200' width='83.3'>Primaria <br/> 16.7 % del Disco </td>
+     <td  height='200' width='66.7'>
+     <table border='0'  height='200' WIDTH='66.7' cellborder='1'>
+     <tr>  <td height='60' colspan='15'>Extendida</td>  </tr>
+     <tr>
+     <td height='140'>EBR</td>
+     <td height='140'>Logica<br/> 33.3 % del Disco </td>
+     <td height='140'>EBR</td>
+     <td height='140'>Logica<br/> 16.7 % del Disco </td>
+     <td height='150'>Libre<br/> 16.7 % del Disco </td>
+     </tr>
+     </table>
+     </td>
+     <td height='200' width='83.3'>Primaria <br/> 16.7 % del Disco </td>
      </tr> 
      </table>        
 >];
