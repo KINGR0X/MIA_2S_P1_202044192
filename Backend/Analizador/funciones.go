@@ -3215,8 +3215,8 @@ func graficar_mbr(direccion string, destino string){
 
 						s_part_name= string(extended_boot_record.Part_name[:])
 
-						fmt.Println("Part_name_logica: ", s_part_name)
-						fmt.Println("Part_size_logica: ", s_part_size)
+						//fmt.Println("Part_name_logica: ", s_part_name)
+						//fmt.Println("Part_size_logica: ", s_part_size)
 						
 
 						// Le quito los caracteres null
