@@ -2178,7 +2178,7 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 							pos_actual, _ = f.Seek(0, io.SeekCurrent)
 
 							// Conversion de bytes a struct
-							fmt.Println("No soy el primero")
+							//fmt.Println("No soy el primero")
 							extended_boot_record = bytes_a_struct_ebr(lectura)
 
 							if extended_boot_record.Part_next == empty {
@@ -2215,6 +2215,7 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 
 
 						if espacio_necesario <= (i_part_size_mbr + i_part_start_mbr) {
+							// === Actualizar el next del ultimo ebr ===
 							copy(extended_boot_record.Part_next[:], strconv.Itoa(i_part_start_ext+i_part_size_ext))
 
 							// Escribo el nex to del ultimo ebr
@@ -2226,6 +2227,15 @@ func crear_particion_logica(direccion string, nombre string, size int, fit strin
 
 							// Escribo el nuevo EBR
 							f.Seek(int64(i_part_start_ext+i_part_size_ext), io.SeekStart)
+
+							// Limpia el array antes de copiar el valor
+							// Limpia el array antes de copiar el valor
+							for i := range extended_boot_record.Part_next {
+								extended_boot_record.Part_next[i] = 0
+							}
+
+
+							//==============
 							copy(extended_boot_record.Part_mount[:], "0")
 							copy(extended_boot_record.Part_fit[:], aux_fit)
 							// Posicion actual del archivo
